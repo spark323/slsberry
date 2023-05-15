@@ -9,12 +9,12 @@
     "path": "^0.12.7",
     "yargs": "^16.2.0"
   },
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "Helper to build serverelss.yml",
-  "main": "src/lib/builder.js",
   "bin": {
     "slsberry": "src/lib/buildServerlessYml.js"
   },
+  "main": "src/lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/spark323/slsberry.git"
