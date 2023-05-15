@@ -26,7 +26,7 @@ function handleTestInput(event, apiSpec) {
       process.env[item.key] = item.value;
     });
   }
-  const method = (apiSpec.method) ? apiSpec.method.toLowerCase() : apiSpec.event[0].method.toLowerCase();
+  const method = (apiSpec.method) ? apiSpec.method.toLowerCase() : (apiSpec.event[0].method) ? apiSpec.event[0].method.toLowerCase() : "post";
   let inputObject;
   if (method === "get" || method === "delete" || method == "websocket") {
     inputObject = (event.queryStringParameters) ? event.queryStringParameters : {};
