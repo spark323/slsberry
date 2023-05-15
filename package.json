@@ -1,0 +1,26 @@
+{
+  "name": "slsberry",
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "fs": "^0.0.1-security",
+    "js-base64": "^3.6.0",
+    "js-yaml": "^4.0.0",
+    "moment": "^2.29.4",
+    "path": "^0.12.7",
+    "yargs": "^16.2.0"
+  },
+  "version": "0.0.3",
+  "description": "Helper to build serverelss.yml",
+  "main": "src/lib/builder.js",
+  "bin": {
+    "slsberry": "src/lib/buildServerlessYml.js"
+  },
+  "license": "MIT",
+  "keywords": [
+    "serverless"
+  ],
+  "author": {
+    "name": "Spark",
+    "email": "innocentchris@gmail.com"
+  }
+}
