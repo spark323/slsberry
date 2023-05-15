@@ -5,13 +5,23 @@ slsberry(이하 svlsbdr)는 AWS Lambda 기반의 Serverless 개발을 효율적�
 
 ## 설치
 ```
-npm install slsberry -g
+npm install slsberry
+```
+```
+yarn install slsberry
+```
+## 사용 방법
+serverless.yml 빌드
+```
+yarn build
 ```
 
-## 사용 방법
+배포
 ```
-svlsbdr 
+yarn deploy --aws-profile [awsprofile 이름]
 ```
+
+
 
 
 # severless.yml 생성
