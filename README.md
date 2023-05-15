@@ -237,14 +237,15 @@ apiSpec을 기반으로 최상위 info.yml에 정의된 정보로 notion 혹은 
 ## info.yml
 프로젝트의 정보를 담습니다.
 ```
-title: plicarvs
-description: plicarvs
+title: demo-slsberry
+description: demo project
 contact:
   name: spark
-  email: chris.park@reconlabs.kr
-  url: reconlabs.ai
-host: https://reconlabs.kr
-database_id: 9f6364496412330ab8ee45a58fe02a7c (Notion Database ID)
+  email: spark@rubywave.io
+  url: rubywave.io
+host: https://rubywave.io
+database_id: 4803f792302e4c7bbd2124a55b117465
+
 ```
 
 ## notion 문서화 
