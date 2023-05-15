@@ -1,6 +1,7 @@
 {
   "name": "slsberry",
   "dependencies": {
+    "@notionhq/client": "^2.0.0",
     "dotenv": "^16.0.2",
     "fs": "^0.0.1-security",
     "js-base64": "^3.6.0",
@@ -9,7 +10,7 @@
     "path": "^0.12.7",
     "yargs": "^16.2.0"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Helper to build serverelss.yml",
   "bin": {
     "slsberry": "src/lib/buildServerlessYml.js"
