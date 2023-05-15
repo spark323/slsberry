@@ -73,13 +73,8 @@ https://{api_gateway_id}.execute-api.{region}.amazonaws.com/{stage}/user/data/ge
 ```
 
 
-
-
-
-
-
 # apiSpec
-각 Lambda 함수에  다음 형식으로 apiSpec을 선언하여 export 합니다. apiSpec은 [lambda-code-helper](https://github.com/spark323/lambda-helper)에서도 활용합니다.
+각 Lambda 함수에  다음 형식으로 apiSpec을 선언하여 export 합니다. 
 ```
 const apiSpec = {
     "category": "test",
