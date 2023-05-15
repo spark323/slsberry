@@ -1,12 +1,12 @@
 
 
 <div align="center">
-<img src="https://s3.ap-northeast-2.amazonaws.com/file.rubywave.io/slsberry_rect.png" >
+<img src="https://s3.ap-northeast-2.amazonaws.com/file.rubywave.io/slsberry_rect_2.png" >
 
 </div>
 
 # slsberry
-slsberry(이하 svlsbdr)는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 기능이 있습니다.
+slsberry는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 프레임워크입니다.
 1. [Serverless Framework](https://www.serverless.com/)에서 사용하는 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 쉽게 만들어줍니다.
 2. 각 함수의 미리 선언된 spec을 기반으로 자동으로 문서를 생성해 export(Notion,OpenAPI 3.0)해줍니다.
 
@@ -38,7 +38,7 @@ yarn deploy --aws-profile [awsprofile 이름]
 
 Lambda 함수를 제외한 나머지 내용을 정의하는 템플릿 파일입니다. 기본 이름은 serverless_template.yml 입니다.  -t flag 로 template 파일을 정의할 수 있습니다. 
 ```
-svlsbdr -t serverless_template.yml 
+yarn build -t serverless_template.yml 
 ```
 
 * 이 템플릿에서 정의되어 있는 app 이름이 함수 명에 포함됩니다.
@@ -46,7 +46,7 @@ svlsbdr -t serverless_template.yml
 ## stage, version
 Serverless.yml 및 함수 명 등에서 사용하는 stage와 각 스테이지 별 버전을 지정할 수 있습니다.
 ```
-svlsbdr --stage test --ver 1
+yarn build --stage test --ver 1
 ```
 
 ## dotenv
@@ -60,7 +60,7 @@ VER=3
 이 경우 스테이지와 버전을 명시 할 필요가 없습니다.
 
 ```
-svlsbdr   (위와 같은 .env가 정의되어 있을 경우 svlsbdr --stage test --ver 3 과 같음)
+slsberry   (위와 같은 .env가 정의되어 있을 경우 slsberry --stage test --ver 3 과 같음)
 ```
 
 
