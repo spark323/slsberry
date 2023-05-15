@@ -1,11 +1,11 @@
-# serverless-cnf-builder
-serverless-cnf-builder(이하 svlsbdr)는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 기능이 있습니다.
+# slsberry
+slsberry(이하 svlsbdr)는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 기능이 있습니다.
 1. [Serverless Framework](https://www.serverless.com/)에서 사용하는 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 쉽게 만들어줍니다.
 2. 각 함수의 미리 선언된 spec을 기반으로 자동으로 문서를 생성하여 export(Notion,OpenAPI 3.0)해줍니다.
 
 ## 설치
 ```
-npm install serverless-cnf-builder -g
+npm install slsberry -g
 ```
 
 ## 사용 방법
