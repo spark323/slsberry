@@ -250,7 +250,7 @@ database_id: 4803f792302e4c7bbd2124a55b117465
 
 ## notion 문서화 
 ```
-svlsbdr -n {notion_api_key} 
+yarn doc -n {notion_api_key} 
 ```
 notion_api_key의 경우 [링크](https://developers.notion.com/) 를 참고해주세요. info.yml에 database_id가 정의되어 있어야 합니다. notion database_id의 경우 [Stack Overflow](https://stackoverflow.com/questions/67728038/where-to-find-database-id-for-my-database-in-notion) 를 참고해주세요.
 
