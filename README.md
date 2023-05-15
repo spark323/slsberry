@@ -2,9 +2,9 @@
 
 <div align="center">
 <img src="https://s3.ap-northeast-2.amazonaws.com/file.rubywave.io/slsberry_rect.png" >
-<p>Perfectly balanced</p>
+
 </div>
-[![slsberry](https://s3.ap-northeast-2.amazonaws.com/file.rubywave.io/slsberry_rect.png)](https://github.com/spark323/slsberry)
+
 # slsberry
 slsberry(이하 svlsbdr)는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 기능이 있습니다.
 1. [Serverless Framework](https://www.serverless.com/)에서 사용하는 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 쉽게 만들어줍니다.
