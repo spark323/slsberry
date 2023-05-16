@@ -253,7 +253,6 @@ async function doCreateNotionTable(apiSpecList, secret, stage, version, projectI
     const nowFormat = moment().format("YYYY-MM-DD HH:mm:ss");
 
     const title = projectInfo.title;
-    const version = ver;
     const host = projectInfo.host;
     const description = `${projectInfo.description}(${nowFormat})`;
     const contact = projectInfo.contact;
