@@ -57,6 +57,7 @@ async function generateServerlessFunction(templateFile, stage = "dev", version =
 
 async function generateExportFile() {
     const apiSpecList = await getApiSpecList();
+
     let yamlStr = yaml.dump(createPostmanImport(apiSpecList));
     fs.writeFileSync(`export.yml`, yamlStr, 'utf8');
 }
@@ -599,13 +600,13 @@ function createPostmanImport(apiSpecList) {
     const host = projectInfo.host;
     const description = projectInfo.description;
     const contact = projectInfo.contact;
-    const version = `${stage}-${_version}`;
+    const version = `${_version}`;
     const servers = [{ url: host }];
     const schemes = ["https"];
     let paths = {};
     //경로에 따라 정렬
     const obj = sortApiSpecListByPath(apiSpecList);
-    //console.log(obj);
+
     for (var property in obj) {
         const _property = "/" + property;
         paths[_property] = {};
@@ -637,7 +638,8 @@ function createPostmanImport(apiSpecList) {
                 }
                 for (var ptr in api.responses.schema.properties) {
                     paths[_property][method].responses["200"]["content"][api.responses.content]["schema"]["properties"][ptr] = {
-                        type: api.responses.schema.properties[ptr].type.toLowerCase()
+                        type: api.responses.schema.properties[ptr].type.toLowerCase(),
+                        description: api.responses.schema.properties[ptr].desc
                     }
                 }
 
@@ -645,24 +647,24 @@ function createPostmanImport(apiSpecList) {
                 for (var property2 in api.errors) {
                     const errorName = property2;
 
-                    const statusCode = api.errors[property2].status_code + "";
+                    const statusCode = api.errors[errorName].status_code + "";
 
-                    const reason = api.errors[property2].reason;
-                    const schema = api.errors[property2].schema;
+                    const reason = api.errors[errorName].reason;
+                    const schema = api.errors[errorName].schema;
                     paths[_property][method].responses[statusCode] = {};
                     paths[_property][method].responses[statusCode]["description"] = errorName;
-                    paths[_property][method].responses[statusCode]["content"] = {};
-                    paths[_property][method].responses[statusCode]["content"]["application/json"] = {
-                        schema: {
-                            type: schema.type,
-                            properties: {},
-                        }
-                    }
-                    for (var ptr in schema.properties) {
-                        paths[_property][method].responses[statusCode]["content"]["application/json"]["schema"]["properties"][ptr] = {
-                            type: schema.properties[ptr].type.toLowerCase()
-                        }
-                    }
+                    // paths[_property][method].responses[statusCode]["content"] = {};
+                    // paths[_property][method].responses[statusCode]["content"]["application/json"] = {
+                    //     schema: {
+                    //         //type: schema.type,
+                    //         properties: {},
+                    //     }
+                    // }
+                    // for (var ptr in schema.properties) {
+                    //     paths[_property][method].responses[statusCode]["content"]["application/json"]["schema"]["properties"][ptr] = {
+                    //         type: schema.properties[ptr].type.toLowerCase()
+                    //     }
+                    // }
                 }
             }
 
@@ -693,6 +695,7 @@ function createPostmanImport(apiSpecList) {
                         requireds.push(parmName);
                     }
                     proprs[parmName] = {
+                        description: parm.desc,
                         type: parm.type.toLowerCase()
                     }
                 }
@@ -718,11 +721,12 @@ function createPostmanImport(apiSpecList) {
         info: {
 
             version: version,
-            title: `${title}(${stage})`,
+            title: `${title}`,
             description: description,
             contact: contact,
-
+            "x-logo": projectInfo.x_logo
         },
+
         servers: servers,
         paths: paths,
         components: {
@@ -744,13 +748,14 @@ function sortApiSpecListByPath(apiSpecList) {
         const prop = apiSpecList[category];
         prop.forEach((itemt) => {
             const item = itemt.item;
-            if (!item || !item.type || item.hide || !item.method) {
+
+            if (!item || item.hide || (item.event.length > 0 ? item.event[0].type.toLowerCase() !== "rest" : true)) {
                 return;
             }
             if (!obj[item.uri]) {
                 obj[item.uri] = [];
             }
-            obj[item.uri][item.method.toLowerCase()] = item;
+            obj[item.uri][item.event[0].method.toLowerCase()] = item;
         })
     }
     return obj;
