@@ -55,11 +55,11 @@ async function generateServerlessFunction(templateFile, stage = "dev", version =
     await printServerlessFunction(templateFile, apiSpecList, stage, version);
 }
 
-async function generateExportFile() {
+async function generateExportFile(stag) {
     const apiSpecList = await getApiSpecList();
 
-    let yamlStr = yaml.dump(createPostmanImport(apiSpecList));
-    fs.writeFileSync(`export.yml`, yamlStr, 'utf8');
+    let yamlStr = yaml.dump(createPostmanImport(apiSpecList, stag));
+    fs.writeFileSync((stag) ? `api_doc_${stag}.yml` : `api_doc.yml`, yamlStr, 'utf8');
 }
 
 async function uploadToNotion(secret, stage, ver) {
@@ -244,10 +244,9 @@ function generateNotionBulletWithChilderenItem(key, items) {
     })
     return org;
 }
-async function createNotionTable(apiSpecList, secret, stage, ver, projectInfo) {
-
-    const _projectInfo = (projectInfo) ? projectInfo : yaml.load(fs.readFileSync('./info.yml', "utf8"));
-    await doCreateNotionTable(apiSpecList, secret, stage, ver, _projectInfo)
+function createNotionTable(apiSpecList, secret, stage, ver) {
+    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
+    doCreateNotionTable(apiSpecList, secret, stage, ver, projectInfo)
 }
 async function doCreateNotionTable(apiSpecList, secret, stage, version, projectInfo) {
     const { Client } = require('@notionhq/client');
@@ -593,9 +592,10 @@ async function doCreateNotionTable(apiSpecList, secret, stage, version, projectI
     }
 }
 //[todo4: 포스트맨에 Export 기능 추가하기]
-function createPostmanImport(apiSpecList) {
-    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
-    const stage = projectInfo.stage;
+function createPostmanImport(apiSpecList, stage) {
+
+    const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
+
     const title = projectInfo.title;
     const _version = projectInfo.version;
     const host = projectInfo.host;
@@ -1037,5 +1037,3 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
 module.exports.generateServerlessFunction = generateServerlessFunction;
 module.exports.generateExportFile = generateExportFile;
 module.exports.uploadToNotion = uploadToNotion;
-module.exports.createNotionTable = createNotionTable;
-

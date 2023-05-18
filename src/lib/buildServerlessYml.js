@@ -12,7 +12,7 @@ try {
         builder.uploadToNotion(process.env.NOTION_SECRET ? process.env.NOTION_SECRET : argv.n, process.env.STAGE, process.env.VER);
     }
     else {
-        (argv.x) ? builder.generateExportFile() : builder.generateServerlessFunction(`./${templateFile}`, argv.stage ? argv.stage : process.env.STAGE, argv.ver ? argv.ver : process.env.VER);
+        (argv.x) ? builder.generateExportFile(argv.x) : builder.generateServerlessFunction(`./${templateFile}`, argv.stage ? argv.stage : process.env.STAGE, argv.ver ? argv.ver : process.env.VER);
     }
 } catch (e) {
     console.error(e);
