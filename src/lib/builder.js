@@ -243,9 +243,10 @@ function generateNotionBulletWithChilderenItem(key, items) {
     })
     return org;
 }
-function createNotionTable(apiSpecList, secret, stage, ver) {
-    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
-    doCreateNotionTable(apiSpecList, secret, stage, ver, projectInfo)
+async function createNotionTable(apiSpecList, secret, stage, ver, projectInfo) {
+
+    const _projectInfo = (projectInfo) ? projectInfo : yaml.load(fs.readFileSync('./info.yml', "utf8"));
+    await doCreateNotionTable(apiSpecList, secret, stage, ver, _projectInfo)
 }
 async function doCreateNotionTable(apiSpecList, secret, stage, version, projectInfo) {
     const { Client } = require('@notionhq/client');
@@ -1032,3 +1033,5 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
 module.exports.generateServerlessFunction = generateServerlessFunction;
 module.exports.generateExportFile = generateExportFile;
 module.exports.uploadToNotion = uploadToNotion;
+module.exports.createNotionTable = createNotionTable;
+
