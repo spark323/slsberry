@@ -362,112 +362,176 @@ function checkInput(inputObject, apiSpec) {
   }
   return ({ "passed": true });
 }
+//https://stackoverflow.com/questions/3885817/how-do-i-check-that-a-number-is-float-or-integer
 function isFloat(n) {
   return Number(n) === n && n % 1 !== 0;
 }
+
+/**
+ * Validates an input object against an API specification.
+ *
+ * @param {Object} apiSpec - The API specification object.
+ * @param {Object} inputObject - The input object to validate.
+ * @param {string} stack - (Optional) The stack of property names used for error reporting.
+ * @returns {boolean|Object} - Returns `true` if the input is valid. Otherwise, returns an error object with details.
+ */
 function iterate(apiSpec, inputObject, stack = "") {
-
-  for (var property in apiSpec) {
-
+  // Iterate over properties in the API specification
+  for (const property in apiSpec) {
     if (apiSpec.hasOwnProperty(property)) {
       const val = apiSpec[property];
 
-      if (val.req && ((inputObject[property] === undefined) || inputObject[property].length < 1)) {
-        return { "result": "parameter_not_exist", "stack": stack + '.' + property, "reason": `${property} is required` };
+      // Check if the property is required and missing in the inputObject
+      if (val.req && (inputObject[property] === undefined || inputObject[property].length < 1)) {
+        return {
+          result: "parameter_not_exist",
+          stack: `${stack}.${property}`,
+          reason: `${property} is required`,
+        };
       }
-      if (inputObject[property] != undefined) {
+
+      // Check if the property exists in the inputObject
+      if (inputObject[property] !== undefined) {
+        const valueToInspect = inputObject[property];
+
         if (val.type === "Integer") {
-          if (isNaN(inputObject[property])) {
-            return { "result": "invalid_type_of_parameter", "reason": "invalid_type_of_parameter,expected integer", "stack": stack + '.' + property };
+          // Check if the value is not a valid integer
+          if (isNaN(valueToInspect)) {
+            return {
+              result: "invalid_type_of_parameter",
+              reason: "invalid_type_of_parameter, expected integer",
+              stack: `${stack}.${property}`,
+            };
           }
-          if (inputObject[property].length > 0) {
-            const valueToInspect = parseInt(inputObject[property]);
-            if (val.min) {
-              if (val.min > valueToInspect) {
-                return { "result": "parameter_value_too_small", "reason": `parameter less than min, expected greater than ${val.min}`, "stack": stack + '.' + property };
-              }
+
+          if (valueToInspect.length > 0) {
+            const intValue = parseInt(valueToInspect);
+
+            // Check if the value is less than the minimum
+            if (val.min && val.min > intValue) {
+              return {
+                result: "parameter_value_too_small",
+                reason: `parameter less than min, expected greater than ${val.min}`,
+                stack: `${stack}.${property}`,
+              };
             }
-            if (val.max) {
-              if (val.max < valueToInspect) {
-                return { "result": "parameter_value_too_big", "reason": `parameter greater than max, expected less than ${val.max}`, "stack": stack + '.' + property };
-              }
+
+            // Check if the value is greater than the maximum
+            if (val.max && val.max < intValue) {
+              return {
+                result: "parameter_value_too_big",
+                reason: `parameter greater than max, expected less than ${val.max}`,
+                stack: `${stack}.${property}`,
+              };
             }
           }
         }
+
         if (val.type === "Float") {
-          if (isNaN(inputObject[property])) {
-            return { "result": "invalid_type_of_parameter", "reason": "invalid_type_of_parameter,expected float", "stack": stack + '.' + property };
+          // Check if the value is not a valid float
+          if (isNaN(valueToInspect) || (!isFloat(valueToInspect) && !Number.isInteger(valueToInspect))) {
+            return {
+              result: "invalid_type_of_parameter",
+              reason: "invalid_type_of_parameter, expected float",
+              stack: `${stack}.${property}`,
+            };
           }
-          if ((!isFloat(inputObject[property]) && !Number.isInteger(inputObject[property]))) {
-            return { "result": "invalid_type_of_parameter", "reason": "invalid_type_of_parameter,expected float", "stack": stack + '.' + property };
-          }
-          if (inputObject[property].length > 0) {
-            const valueToInspect = parseInt(inputObject[property]);
-            if (val.min) {
-              if (val.min > valueToInspect) {
-                return { "result": "parameter_value_too_small", "reason": `parameter less than min, expected greater than ${val.min}`, "stack": stack + '.' + property };
-              }
+
+          if (valueToInspect.length > 0) {
+            const floatValue = parseFloat(valueToInspect);
+
+            // Check if the value is less than the minimum
+            if (val.min && val.min > floatValue) {
+              return {
+                result: "parameter_value_too_small",
+                reason: `parameter less than min, expected greater than ${val.min}`,
+                stack: `${stack}.${property}`,
+              };
             }
-            if (val.max) {
-              if (val.max < valueToInspect) {
-                return { "result": "parameter_value_too_big", "reason": `parameter greater than max, expected less than ${val.max}`, "stack": stack + '.' + property };
-              }
+
+            // Check if the value is greater than the maximum
+            if (val.max && val.max < floatValue) {
+              return {
+                result: "parameter_value_too_big",
+                reason: `parameter greater than max, expected less than ${val.max}`,
+                stack: `${stack}.${property}`,
+              };
             }
           }
         }
+
         if (val.type === "Array") {
-
-          if (!Array.isArray(inputObject[property])) {
-
-            return { "result": "invalid_type_of_parameter", "reason": `invalid_type_of_parameter,expected array`, "stack": stack + '.' + property };
-
+          // Check if the value is not an array
+          if (!Array.isArray(valueToInspect)) {
+            return {
+              result: "invalid_type_of_parameter",
+              reason: `invalid_type_of_parameter, expected array`,
+              stack: `${stack}.${property}`,
+            };
           }
-          if (val.req) {
-            if (inputObject[property].length < 1) {
-              return { "result": "array_is_empty", "reason": `array_is_empty`, "stack": stack + '.' + property };
-            }
+
+          // Check if the array is required and empty
+          if (val.req && valueToInspect.length < 1) {
+            return {
+              result: "array_is_empty",
+              reason: `array is empty`,
+              stack: `${stack}.${property}`,
+            };
           }
         }
+
         if (val.type.toLowerCase() === "string") {
-          const valueToInspect = inputObject[property]
-          // if (valueToInspect.length < 1) {
-          //   return { "result": "invalid_type_of_parameter", "reason": `parameter cannot be an empty string`, "stack": stack + '.' + property };
-          // }
-          if (val.notEmpty) {
-            if (valueToInspect === "") {
-              return { "result": "parameter_canot_be_an_emptystring", "reason": `parameter cannot be an empty string`, "stack": stack + '.' + property };
-            }
+          // Check if the value is an empty string when not allowed
+          if (val.notEmpty && valueToInspect === "") {
+            return {
+              result: "parameter_cannot_be_an_emptystring",
+              reason: `parameter cannot be an empty string`,
+              stack: `${stack}.${property}`,
+            };
           }
-          if (val.min) {
-            if (valueToInspect.length > 0 && (val.min > valueToInspect.length)) {
-              return { "result": "parameter_length_too_short", "reason": `parameter length less than min, expected greater than ${val.min}`, "stack": stack + '.' + property };
-            }
+
+          // Check if the string length is less than the minimum
+          if (val.min && valueToInspect.length > 0 && val.min > valueToInspect.length) {
+            return {
+              result: "parameter_length_too_short",
+              reason: `parameter length less than min, expected greater than ${val.min}`,
+              stack: `${stack}.${property}`,
+            };
           }
-          if (val.max) {
-            if (valueToInspect.length > 0 && (val.max < valueToInspect.length)) {
-              return { "result": "parameter_length_too_long", "reason": `parameter length greater than max, expected less than ${val.max}`, "stack": stack + '.' + property };
-            }
+
+          // Check if the string length is greater than the maximum
+          if (val.max && valueToInspect.length > 0 && val.max < valueToInspect.length) {
+            return {
+              result: "parameter_length_too_long",
+              reason: `parameter length greater than max, expected less than ${val.max}`,
+              stack: `${stack}.${property}`,
+            };
           }
         }
+
         if (val.type.toLowerCase() === "password") {
-          const valueToInspect = inputObject[property]
-
-          if (val.min) {
-            if (val.min > valueToInspect.length) {
-              return { "result": "parameter_length_too_short", "reason": `parameter length less than min, expected greater than ${val.min}`, "stack": stack + '.' + property };
-            }
+          // Check if the string length is less than the minimum
+          if (val.min && val.min > valueToInspect.length) {
+            return {
+              result: "parameter_length_too_short",
+              reason: `parameter length less than min, expected greater than ${val.min}`,
+              stack: `${stack}.${property}`,
+            };
           }
-          if (val.max) {
-            if (val.max < valueToInspect.length) {
-              return { "result": "parameter_length_too_long", "reason": `parameter length greater than max, expected less than ${val.max}`, "stack": stack + '.' + property };
-            }
+
+          // Check if the string length is greater than the maximum
+          if (val.max && val.max < valueToInspect.length) {
+            return {
+              result: "parameter_length_too_long",
+              reason: `parameter length greater than max, expected less than ${val.max}`,
+              stack: `${stack}.${property}`,
+            };
           }
         }
-
-
       }
     }
   }
+
   return true;
 }
 /**
