@@ -596,14 +596,9 @@ function createPostmanImport(apiSpecList, stage) {
 
     const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
 
-    const title = projectInfo.title;
-    const _version = projectInfo.version;
     const host = projectInfo.host;
-    const description = projectInfo.description;
-    const contact = projectInfo.contact;
-    const version = `${_version}`;
-    const servers = [{ url: host }];
-    const schemes = ["https"];
+
+
     let paths = {};
     //경로에 따라 정렬
     const obj = sortApiSpecListByPath(apiSpecList);
@@ -721,14 +716,10 @@ function createPostmanImport(apiSpecList, stage) {
         "openapi": "3.0.0",
         info: {
 
-            version: version,
-            title: `${title}`,
-            description: description,
-            contact: contact,
-            "x-logo": projectInfo.x_logo
+            ...projectInfo.info
         },
 
-        servers: servers,
+        servers: projectInfo.servers,
         paths: paths,
         components: {
             securitySchemes:
