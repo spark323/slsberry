@@ -980,6 +980,9 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                     if (item.timeout) {
                         funcObject["timeout"] = parseInt(item.timeout);
                     }
+                    if (item.environment) {
+                        funcObject["environment"] = item.environment
+                    }
                     //메모리 설정이 존재한다면 메모리 추가
                     if (item.memorySize) {
                         funcObject["memorySize"] = parseInt(item.memorySize);
