@@ -511,7 +511,10 @@ async function handleHttpRequest(event, context, apiSpec, handler, Logger) {
   let response;
   try {
     const result = await handler(inputObject, event);
-    if (result.status === 200) {
+    if (apiSpec.responses.raw) {
+      response = result
+    }
+    else if (result.status === 200) {
       response = createOKResponseV2(result.response);
     } else {
       const predefinedErrorName = isObject(result.predefinedError) ? result.predefinedError.result : result.predefinedError;
