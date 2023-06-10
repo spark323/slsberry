@@ -983,6 +983,9 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                     if (item.environment) {
                         funcObject["environment"] = item.environment
                     }
+                    if (item.role) {
+                        funcObject["role"] = item.role
+                    }
                     //메모리 설정이 존재한다면 메모리 추가
                     if (item.memorySize) {
                         funcObject["memorySize"] = parseInt(item.memorySize);
