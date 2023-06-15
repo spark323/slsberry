@@ -819,14 +819,20 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                     sqs: {
                                         arn: item.sqsARN,
                                         batchSize: item.batchSize,
-                                        maximumBatchingWindow: item.maximumBatchingWindow
+                                        maximumBatchingWindow: item.maximumBatchingWindow,
+                                        maximumConcurrency: item.maximumConcurrency
                                     }
                                 })
                             }
                             //이 serverless에서 sqs를 생성하는 경우
                             else {
                                 funcObject["events"].push({
-                                    sqs: { arn: { "Fn::GetAtt": [item.sqs, "Arn"] }, batchSize: item.batchSize }
+                                    sqs: {
+                                        arn: { "Fn::GetAtt": [item.sqs, "Arn"] },
+                                        batchSize: item.batchSize,
+                                        maximumBatchingWindow: item.maximumBatchingWindow,
+                                        maximumConcurrency: item.maximumConcurrency
+                                    }
                                 })
                             }
                         }
@@ -924,7 +930,9 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                         sqs: {
                                             arn: element.sqsARN,
                                             batchSize: element.batchSize.Array,
-                                            maximumBatchingWindow: element.maximumBatchingWindow
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumConcurrency: element.maximumConcurrency
                                         }
                                     })
                                 }
