@@ -939,7 +939,13 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                 //이 serverless에서 sqs를 생성하는 경우
                                 else {
                                     funcObject["events"].push({
-                                        sqs: { arn: { "Fn::GetAtt": [element.sqs, "Arn"] }, batchSize: element.batchSize }
+                                        sqs: {
+                                            arn: { "Fn::GetAtt": [element.sqs, "Arn"] },
+                                            batchSize: element.batchSize,
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumConcurrency: element.maximumConcurrency
+
+                                        }
                                     })
                                 }
                             }
