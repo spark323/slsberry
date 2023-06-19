@@ -249,7 +249,7 @@ const apiSpec = {
 Default 값은
 
 ```
-${self:app}_${stage}_${version}_{lambda 경로}
+${self:service}_${stage}_${version}_{lambda 경로}
 ```
 
 입니다.
@@ -257,7 +257,7 @@ ${self:app}_${stage}_${version}_{lambda 경로}
 예: ./src/lambda/user/data/get.js 라면, 함수명은
 
 ```
-${self:app}_${stage}_${version}_user_data_get
+${self:service}_${stage}_${version}_user_data_get
 ```
 
 입니다.
@@ -273,6 +273,7 @@ apiSpec을 기반으로 최상위 info.yml에 정의된 정보로 notion 혹은 
 ```
 title: demo-slsberry
 description: demo project
+version: 0.0.1
 contact:
   name: spark
   email: spark@rubywave.io
