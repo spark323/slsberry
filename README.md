@@ -292,3 +292,8 @@ notion_api_key의 경우 [링크](https://developers.notion.com/) 를 참고해�
 
 Notion 데이터베이스는 경우 Name Description Stage(Select) Version 컬럼이 있어야 합니다.
 ![이미지](https://github.com/spark323/serverless-config-builder/blob/master/doc/image/1.png)
+
+
+## License
+
+[Apache License](./LICENSE)
