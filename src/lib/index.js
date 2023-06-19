@@ -2,6 +2,7 @@ const builder = require("./builder");
 const lambdaHandler = require("./lambdaHandler");
 module.exports.generateServerlessFunction = builder.generateServerlessFunction;
 module.exports.generateExportFile = builder.generateExportFile;
+module.exports.createNotionTable = builder.createNotionTable;
 module.exports.uploadToNotion = builder.uploadToNotion;
 module.exports.handleLambdaEvent = lambdaHandler.handleLambdaEvent;
 module.exports.handleHttpRequest = lambdaHandler.handleHttpRequest;
@@ -22,3 +23,4 @@ module.exports.createOKResponseV2 = lambdaHandler.createOKResponseV2;
 module.exports.createErrorResponseV2 = lambdaHandler.createErrorResponseV2;
 module.exports.createInternalErrorResponseV2 = lambdaHandler.createInternalErrorResponseV2;
 module.exports.createPredefinedErrorResponseV2 = lambdaHandler.createPredefinedErrorResponseV2;
+

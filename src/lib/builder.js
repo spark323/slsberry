@@ -50,19 +50,20 @@ svlsbdr의 진입점
 */
 async function generateServerlessFunction(templateFile, stage = "dev", version = 1) {
     //먼저 src/lambda 이하의 파일을 파싱해 apiSpec들을 가져와서
-    const apiSpecList = await getApiSepcList();
+    const apiSpecList = await getApiSpecList();
     //serverless.yml로 프린트한다.
     await printServerlessFunction(templateFile, apiSpecList, stage, version);
 }
 
-async function generateExportFile() {
-    const apiSpecList = await getApiSepcList();
-    let yamlStr = yaml.dump(createPostmanImport(apiSpecList));
-    fs.writeFileSync(`export.yml`, yamlStr, 'utf8');
+async function generateExportFile(stag) {
+    const apiSpecList = await getApiSpecList();
+
+    let yamlStr = yaml.dump(createPostmanImport(apiSpecList, stag));
+    fs.writeFileSync((stag) ? `api_doc_${stag}.yml` : `api_doc.yml`, yamlStr, 'utf8');
 }
 
 async function uploadToNotion(secret, stage, ver) {
-    const apiSpecList = await getApiSepcList();
+    const apiSpecList = await getApiSpecList();
     await createNotionTable(apiSpecList, secret, stage, ver);
 
 }
@@ -74,7 +75,7 @@ async function uploadToNotion(secret, stage, ver) {
 
 serverless.yml 파일에 쓰기 전에 람다 함수의 목록을 작성한다.
 */
-async function getApiSepcList() {
+async function getApiSpecList() {
     //[todo1: 소스파일 경로 지정할 수 있도록 변경]
     let files = await getFunctionList("./src/lambda", []);
     let apiSpecList = { "nomatch": [], "error": [] };
@@ -243,22 +244,20 @@ function generateNotionBulletWithChilderenItem(key, items) {
     })
     return org;
 }
-async function createNotionTable(apiSpecList, secret, stage, ver) {
-
+function createNotionTable(apiSpecList, secret, stage, ver) {
+    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
+    doCreateNotionTable(apiSpecList, secret, stage, ver, projectInfo)
+}
+async function doCreateNotionTable(apiSpecList, secret, stage, version, projectInfo) {
     const { Client } = require('@notionhq/client');
-
     const notion = new Client({ auth: secret });
     const nowFormat = moment().format("YYYY-MM-DD HH:mm:ss");
 
-
-    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
-
     const title = projectInfo.title;
-    const _version = ver;
     const host = projectInfo.host;
     const description = `${projectInfo.description}(${nowFormat})`;
     const contact = projectInfo.contact;
-    const version = `${stage}-${_version}`;
+
     const servers = [{ url: host }];
     const schemes = ["https"];
 
@@ -277,7 +276,7 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                 "title": [
                     {
                         "text": {
-                            "content": `${title}-${stage}-${_version}`
+                            "content": `${title}-${stage}-${version}`
                         }
                     }
                 ]
@@ -293,7 +292,7 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                 "rich_text": [
                     {
                         "text": {
-                            "content": _version
+                            "content": version
                         }
                     }
                 ]
@@ -352,7 +351,7 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
             {
                 "type": "text",
                 "text": {
-                    "content": `${title}-${stage}-${_version}`,
+                    "content": `${title}-${stage}-${version}`,
                     "link": null
                 }
             }
@@ -362,108 +361,22 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
             "Name": {
                 "title": {}
             },
-
             "(A)Category": {
                 "select": {}
             },
-
-
             "(B)Type": {
                 "rich_text": {}
             },
-
-            // "Method": {
-            //     "select": {
-            //         "options": [
-            //             {
-            //                 "name": "get",
-            //                 "color": "green"
-            //             },
-            //             {
-            //                 "name": "put",
-            //                 "color": "red"
-            //             },
-            //             {
-            //                 "name": "post",
-            //                 "color": "yellow"
-            //             },
-            //             {
-            //                 "name": "put",
-            //                 "color": "blue"
-            //             }
-            //             ,
-            //             {
-            //                 "name": "delete",
-            //                 "color": "red"
-            //             }
-            //         ]
-            //     }
-            // },
             "(C)Description": {
                 "rich_text": {}
             },
             "(D)Seq": {
                 "rich_text": {}
             },
-            // "Food group": {
-
-            // },
-            // "Price": {
-            //     "number": {
-            //         "format": "dollar"
-            //     }
-            // },
-            // "Last ordered": {
-            //     "date": {}
-            // },
-            // "Meals": {
-            //     "relation": {
-            //         "database_id": "668d797c-76fa-4934-9b05-ad288df2d136",
-            //         "single_property": {}
-            //     }
-            // },
-            // "Number of meals": {
-            //     "rollup": {
-            //         "rollup_property_name": "Name",
-            //         "relation_property_name": "Meals",
-            //         "function": "count"
-            //     }
-            // },
-            // "Store availability": {
-            //     "type": "multi_select",
-            //     "multi_select": {
-            //         "options": [
-            //             {
-            //                 "name": "Duc Loi Market",
-            //                 "color": "blue"
-            //             },
-            //             {
-            //                 "name": "Rainbow Grocery",
-            //                 "color": "gray"
-            //             },
-            //             {
-            //                 "name": "Nijiya Market",
-            //                 "color": "purple"
-            //             },
-            //             {
-            //                 "name": "Gus'\''s Community Market",
-            //                 "color": "yellow"
-            //             }
-            //         ]
-            //     }
-            // },
-            // "+1": {
-            //     "people": {}
-            // },
-            // "Photo": {
-            //     "files": {}
-            // }
         }
     }
     const dbresponse = await notion.databases.create(createDBPayload)
-
     const mainDBId = dbresponse.id;
-
     let cnt = 0;
     for (var property in apiSpecList) {
         let apiSpec = apiSpecList[property];
@@ -471,13 +384,9 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
             apiSpec.forEach(() => {
                 cnt++;
             })
-
         }
     }
     cnt -= 1;
-
-    //
-
     for (var property in apiSpecList) {
         let apiSpec = apiSpecList[property]
         apiSpec = apiSpec.reverse()
@@ -487,18 +396,8 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                 await previousPromise2;
                 return new Promise(async (resolve2, reject2) => {
                     const item = obj.item;
-                    // console.log(item.event[0]);
-                    // if ((item.type && item.type.toLowerCase() != "rest") || (item.event[0].type && item.event[0].type.toLowerCase() != "rest")) {
-                    //     resolve2("ok")
-                    //     return;
-                    // }
-                    try {
 
-                        // oneRow.table_row.cells.push([generateNotionRow(`${cnt++}`)])
-                        // oneRow.table_row.cells.push([generateNotionRow(item.name)]);
-                        // oneRow.table_row.cells.push([generateNotionRow(item.type)]);
-                        // oneRow.table_row.cells.push([generateNotionRow(item.desc)]);
-                        // oneRow.table_row.cells.push([generateNotionRow(item.method)]);
+                    try {
                         let type = (item.type) ? item.type.toLowerCase() : item.event[0].type.toLowerCase()
                         let method = (type == "rest") ? ((item.method) ? item.method.toLowerCase() : item.event[0].method.toLowerCase()) : "-"
                         method = (type == "datatable") ? "get" : method
@@ -525,15 +424,6 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                                         "name": `${item.category}`
                                     }
                                 },
-
-
-                                // "D-Method": {
-                                //     "select":
-
-                                //     {
-                                //         "name": `${method}`
-                                //     }
-                                // },
                                 "(B)Type": {
                                     "rich_text": [
                                         {
@@ -543,7 +433,6 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                                         }
                                     ]
                                 },
-
                                 "(C)Description": {
                                     "rich_text": [
                                         {
@@ -580,24 +469,6 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
 
                             ],
                         }
-                        // console.log(item.event[0]);
-                        // createSubPage.properties["Method"] = {
-                        //     "select": {
-                        //         "name": method
-                        //     }
-                        // }
-                        // createSubPage.properties["Type"] = {
-                        //     "rich_text": [
-                        //         {
-                        //             "text": {
-                        //                 "content": type
-                        //             }
-                        //         }
-                        //     ]
-                        // };
-
-
-
                         createSubPage.children.push(generateSingleNotionBulletItem("Description:" + item.desc));
                         createSubPage.children.push(generateEmptyItem())
                         if (type == "sqs") {
@@ -609,21 +480,6 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                             createSubPage.children.push(generateNotionBulletWithChilderenItem("SQS Arn", bList))
                         }
                         if (type == "s3") {
-
-
-                            // {
-                            //     "type": "s3",
-                            //     "existing": true,
-                            //     "bucket": `my-test-bucket`,
-                            //     "event": "s3:ObjectCreated:put"
-                            // },
-                            // {
-                            //     "type": "s3",
-                            //     "existing": false,
-                            //     "bucket": `\${ssm:/\${self:app}/\${opt:stage, "dev"}/filebucket}`,
-                            //     "event": "s3:ObjectCreated:post"
-                            // }
-
                             let bList = []
                             item.event.forEach(element => {
                                 let arrb = []
@@ -680,10 +536,7 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                             //createSubPage.children.push(generateNotionBulletItem("parameter", parmText));
                             createSubPage.children.push(generateEmptyItem())
 
-
-
                             //에러
-
 
                             if (item && item.errors) {
                                 let bList = []
@@ -695,26 +548,8 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
                                 createSubPage.children.push(generateEmptyItem())
                             }
 
-
-                            // let responseText = ""
-                            // for (var property in item.responses) {
-                            //     const obj = item.responses[property];
-                            //     responseText = `${property}[${obj.type}]:${obj.desc}`
-
-                            //     if (obj.sub) {
-
-                            //         for (var prop in obj.sub) {
-                            //             const obj2 = obj.sub[prop];
-                            //             responseText = `${prop}[${obj2.type}]${obj2.searchable ? "(Searchable)" : ""}:${obj2.desc}\n`
-                            //         }
-
-                            //     }
-                            // }
-                            // console.log(JSON.stringify(item.responses));
                             let responseString = JSON.stringify(item.responses, null, 2);
                             if (responseString.length > 1990) {
-
-
                                 let iterateList = undefined;
                                 if (type == "datatable") {
                                     iterateList = item.responses.Columns.sub
@@ -757,21 +592,17 @@ async function createNotionTable(apiSpecList, secret, stage, ver) {
     }
 }
 //[todo4: 포스트맨에 Export 기능 추가하기]
-function createPostmanImport(apiSpecList) {
-    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
-    const stage = projectInfo.stage;
-    const title = projectInfo.title;
-    const _version = projectInfo.version;
+function createPostmanImport(apiSpecList, stage) {
+
+    const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
+
     const host = projectInfo.host;
-    const description = projectInfo.description;
-    const contact = projectInfo.contact;
-    const version = `${stage}-${_version}`;
-    const servers = [{ url: host }];
-    const schemes = ["https"];
+
+
     let paths = {};
     //경로에 따라 정렬
     const obj = sortApiSpecListByPath(apiSpecList);
-    //console.log(obj);
+
     for (var property in obj) {
         const _property = "/" + property;
         paths[_property] = {};
@@ -803,7 +634,8 @@ function createPostmanImport(apiSpecList) {
                 }
                 for (var ptr in api.responses.schema.properties) {
                     paths[_property][method].responses["200"]["content"][api.responses.content]["schema"]["properties"][ptr] = {
-                        type: api.responses.schema.properties[ptr].type.toLowerCase()
+                        type: api.responses.schema.properties[ptr].type.toLowerCase(),
+                        description: api.responses.schema.properties[ptr].desc
                     }
                 }
 
@@ -811,24 +643,24 @@ function createPostmanImport(apiSpecList) {
                 for (var property2 in api.errors) {
                     const errorName = property2;
 
-                    const statusCode = api.errors[property2].status_code + "";
+                    const statusCode = api.errors[errorName].status_code + "";
 
-                    const reason = api.errors[property2].reason;
-                    const schema = api.errors[property2].schema;
+                    const reason = api.errors[errorName].reason;
+                    const schema = api.errors[errorName].schema;
                     paths[_property][method].responses[statusCode] = {};
                     paths[_property][method].responses[statusCode]["description"] = errorName;
-                    paths[_property][method].responses[statusCode]["content"] = {};
-                    paths[_property][method].responses[statusCode]["content"]["application/json"] = {
-                        schema: {
-                            type: schema.type,
-                            properties: {},
-                        }
-                    }
-                    for (var ptr in schema.properties) {
-                        paths[_property][method].responses[statusCode]["content"]["application/json"]["schema"]["properties"][ptr] = {
-                            type: schema.properties[ptr].type.toLowerCase()
-                        }
-                    }
+                    // paths[_property][method].responses[statusCode]["content"] = {};
+                    // paths[_property][method].responses[statusCode]["content"]["application/json"] = {
+                    //     schema: {
+                    //         //type: schema.type,
+                    //         properties: {},
+                    //     }
+                    // }
+                    // for (var ptr in schema.properties) {
+                    //     paths[_property][method].responses[statusCode]["content"]["application/json"]["schema"]["properties"][ptr] = {
+                    //         type: schema.properties[ptr].type.toLowerCase()
+                    //     }
+                    // }
                 }
             }
 
@@ -859,6 +691,7 @@ function createPostmanImport(apiSpecList) {
                         requireds.push(parmName);
                     }
                     proprs[parmName] = {
+                        description: parm.desc,
                         type: parm.type.toLowerCase()
                     }
                 }
@@ -883,13 +716,10 @@ function createPostmanImport(apiSpecList) {
         "openapi": "3.0.0",
         info: {
 
-            version: version,
-            title: `${title}(${stage})`,
-            description: description,
-            contact: contact,
-
+            ...projectInfo.info
         },
-        servers: servers,
+
+        servers: projectInfo.servers,
         paths: paths,
         components: {
             securitySchemes:
@@ -910,13 +740,14 @@ function sortApiSpecListByPath(apiSpecList) {
         const prop = apiSpecList[category];
         prop.forEach((itemt) => {
             const item = itemt.item;
-            if (!item || !item.type || item.hide || !item.method) {
+
+            if (!item || item.hide || (item.event.length > 0 ? item.event[0].type.toLowerCase() !== "rest" : true)) {
                 return;
             }
             if (!obj[item.uri]) {
                 obj[item.uri] = [];
             }
-            obj[item.uri][item.method.toLowerCase()] = item;
+            obj[item.uri][item.event[0].method.toLowerCase()] = item;
         })
     }
     return obj;
@@ -988,14 +819,20 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                     sqs: {
                                         arn: item.sqsARN,
                                         batchSize: item.batchSize,
-                                        maximumBatchingWindow: item.maximumBatchingWindow
+                                        maximumBatchingWindow: item.maximumBatchingWindow,
+                                        maximumConcurrency: item.maximumConcurrency
                                     }
                                 })
                             }
                             //이 serverless에서 sqs를 생성하는 경우
                             else {
                                 funcObject["events"].push({
-                                    sqs: { arn: { "Fn::GetAtt": [item.sqs, "Arn"] }, batchSize: item.batchSize }
+                                    sqs: {
+                                        arn: { "Fn::GetAtt": [item.sqs, "Arn"] },
+                                        batchSize: item.batchSize,
+                                        maximumBatchingWindow: item.maximumBatchingWindow,
+                                        maximumConcurrency: item.maximumConcurrency
+                                    }
                                 })
                             }
                         }
@@ -1093,14 +930,22 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                         sqs: {
                                             arn: element.sqsARN,
                                             batchSize: element.batchSize.Array,
-                                            maximumBatchingWindow: element.maximumBatchingWindow
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumConcurrency: element.maximumConcurrency
                                         }
                                     })
                                 }
                                 //이 serverless에서 sqs를 생성하는 경우
                                 else {
                                     funcObject["events"].push({
-                                        sqs: { arn: { "Fn::GetAtt": [element.sqs, "Arn"] }, batchSize: element.batchSize }
+                                        sqs: {
+                                            arn: { "Fn::GetAtt": [element.sqs, "Arn"] },
+                                            batchSize: element.batchSize,
+                                            maximumBatchingWindow: element.maximumBatchingWindow,
+                                            maximumConcurrency: element.maximumConcurrency
+
+                                        }
                                     })
                                 }
                             }
@@ -1148,6 +993,12 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                     //타임아웃이 존재한다면, 타임아웃 추가
                     if (item.timeout) {
                         funcObject["timeout"] = parseInt(item.timeout);
+                    }
+                    if (item.environment) {
+                        funcObject["environment"] = item.environment
+                    }
+                    if (item.role) {
+                        funcObject["role"] = item.role
                     }
                     //메모리 설정이 존재한다면 메모리 추가
                     if (item.memorySize) {
