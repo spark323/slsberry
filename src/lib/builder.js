@@ -245,7 +245,7 @@ function generateNotionBulletWithChilderenItem(key, items) {
     return org;
 }
 function createNotionTable(apiSpecList, secret, stage, ver) {
-    const projectInfo = yaml.load(fs.readFileSync('./info.yml', "utf8"));
+    const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
     doCreateNotionTable(apiSpecList, secret, stage, ver, projectInfo)
 }
 async function doCreateNotionTable(apiSpecList, secret, stage, version, projectInfo) {
@@ -253,10 +253,10 @@ async function doCreateNotionTable(apiSpecList, secret, stage, version, projectI
     const notion = new Client({ auth: secret });
     const nowFormat = moment().format("YYYY-MM-DD HH:mm:ss");
 
-    const title = projectInfo.title;
-    const host = projectInfo.host;
-    const description = `${projectInfo.description}(${nowFormat})`;
-    const contact = projectInfo.contact;
+    const title = projectInfo.info.title;
+    const host = projectInfo.info.host;
+    const description = `${projectInfo.info.description}(${nowFormat})`;
+    const contact = projectInfo.info.contact;
 
     const servers = [{ url: host }];
     const schemes = ["https"];
