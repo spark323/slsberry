@@ -765,6 +765,7 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
     let serverlessTemplet1 = yaml.load(fs.readFileSync(templateFile, "utf8"))
     let functions = {};
     //만들어둔 apiSpecList를 활용해서 
+    let restExist = false;
     for (var property in apiSpecList) {
 
         //apiSpecList는 카테고리 를 Key로 하여 구성되어 있다.
@@ -793,6 +794,7 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                             })
                         }
                         else if (item.type == "REST") {
+                            restExist = true;
                             funcObject.events.push(
                                 {
                                     httpApi: {
@@ -885,6 +887,7 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                 })
                             }
                             else if (element.type == "REST") {
+                                restExist = true;
                                 funcObject.events.push(
                                     {
                                         httpApi: {
@@ -1033,18 +1036,22 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
             },
             Value: "${self:provider.stackName}-ServiceEndpoint"
         },
-        HttpApiId: {
-            Export: {
-                Name: "${self:provider.stackName}-HttpApiId",
-            },
-            Value: "${self:provider.stackName}-HttpApiId"
-        },
-        HttpApiUrl: {
+
+        ...serverlessTemplet1.resources.Outputs
+    }
+    if (restExist) {
+        serverlessTemplet1.resources.Outputs["HttpApiUrl"] =
+        {
             Export: {
                 Name: "${self:provider.stackName}-HttpApiUrl",
             },
 
-        }, ...serverlessTemplet1.resources.Outputs
+        }
+        serverlessTemplet1.resources.Outputs["HttpApiId"] = {
+            Export: {
+                Name: "${self:provider.stackName}-HttpApiId",
+            },
+        }
     }
     //serverless.yml파일을 쓴다.
     let yamlStr = yaml.dump(serverlessTemplet1, { lineWidth: 140 });
