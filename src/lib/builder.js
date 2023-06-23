@@ -629,13 +629,17 @@ function createPostmanImport(apiSpecList, stage) {
 
                     schema: {
                         type: api.responses.schema.type,
+                        description: api.responses.schema.desc,
                         properties: {},
+                        items: api.responses.schema.items
                     }
                 }
                 for (var ptr in api.responses.schema.properties) {
+
                     paths[_property][method].responses["200"]["content"][api.responses.content]["schema"]["properties"][ptr] = {
                         type: api.responses.schema.properties[ptr].type.toLowerCase(),
-                        description: api.responses.schema.properties[ptr].desc
+                        description: api.responses.schema.properties[ptr].desc,
+                        items: api.responses.schema.properties[ptr].items
                     }
                 }
 
@@ -692,7 +696,8 @@ function createPostmanImport(apiSpecList, stage) {
                     }
                     proprs[parmName] = {
                         description: parm.desc,
-                        type: parm.type.toLowerCase()
+                        type: parm.type.toLowerCase(),
+                        properties: parm.properties,
                     }
                 }
                 paths[_property][method].requestBody = {
