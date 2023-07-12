@@ -514,6 +514,9 @@ async function handleHttpRequest(event, context, apiSpec, handler, Logger) {
     if (apiSpec.responses.raw) {
       response = result
     }
+    else if (result.status === 302) {
+      response = createRedirectionResponseV2(result.url, result.response);
+    }
     else if (result.status === 200) {
       response = createOKResponseV2(result.response);
     } else {
