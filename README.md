@@ -4,7 +4,7 @@
 </div>
 
 # slsberry
-
+(현재 문서화 진행중입니다)
 slsberry는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 프레임워크입니다.
 
 1. [Serverless Framework](https://www.serverless.com/)에서 사용하는 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 쉽게 만들어줍니다.
