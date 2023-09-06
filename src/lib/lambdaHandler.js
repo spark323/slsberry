@@ -343,7 +343,7 @@ function validateInput(inputObject, apiSpec) {
 			joiprop = Joi.number();
 		} else if (parm.type.toLowerCase().includes("string")) {
 			joiprop = Joi.string();
-			if (!parm.req) {
+			if (parm.req == false || parm.req == undefined) {
 				joiprop.allow(null, "");
 			}
 			if (parm.subtype === "email") {
