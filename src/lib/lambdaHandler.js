@@ -344,7 +344,7 @@ function validateInput(inputObject, apiSpec) {
 		} else if (parm.type.toLowerCase().includes("string")) {
 			joiprop = Joi.string();
 			if (parm.req == false || parm.req == undefined) {
-				joiprop.allow(null, "");
+				joiprop = joiprop.allow(null, "");
 			}
 			if (parm.subtype === "email") {
 				joiprop = joiprop.email();
