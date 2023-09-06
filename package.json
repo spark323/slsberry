@@ -1,31 +1,32 @@
 {
-  "name": "slsberry",
-  "dependencies": {
-    "@notionhq/client": "^2.0.0",
-    "dotenv": "^16.0.2",
-    "fs": "^0.0.1-security",
-    "js-base64": "^3.6.0",
-    "js-yaml": "^4.0.0",
-    "moment": "^2.29.4",
-    "path": "^0.12.7",
-    "yargs": "^16.2.0"
-  },
-  "version": "0.0.26",
-  "description": "Helper to build serverelss.yml",
-  "bin": {
-    "slsberry": "src/lib/buildServerlessYml.js"
-  },
-  "main": "src/lib/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/spark323/slsberry.git"
-  },
-  "license": "MIT",
-  "keywords": [
-    "serverless"
-  ],
-  "author": {
-    "name": "Spark",
-    "email": "innocentchris@gmail.com"
-  }
+	"name": "slsberry",
+	"dependencies": {
+		"@notionhq/client": "^2.0.0",
+		"dotenv": "^16.0.2",
+		"fs": "^0.0.1-security",
+		"js-base64": "^3.6.0",
+		"js-yaml": "^4.0.0",
+		"moment": "^2.29.4",
+		"path": "^0.12.7",
+		"joi": "^17.10.1",
+		"yargs": "^16.2.0"
+	},
+	"version": "0.0.26",
+	"description": "Helper to build serverelss.yml",
+	"bin": {
+		"slsberry": "src/lib/buildServerlessYml.js"
+	},
+	"main": "src/lib/index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/spark323/slsberry.git"
+	},
+	"license": "MIT",
+	"keywords": [
+		"serverless"
+	],
+	"author": {
+		"name": "Spark",
+		"email": "innocentchris@gmail.com"
+	}
 }
