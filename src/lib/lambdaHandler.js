@@ -343,6 +343,9 @@ function validateInput(inputObject, apiSpec) {
 			joiprop = Joi.number();
 		} else if (parm.type.toLowerCase().includes("string")) {
 			joiprop = Joi.string();
+			if (!parm.req) {
+				joiprop.allow(null, "");
+			}
 			if (parm.subtype === "email") {
 				joiprop = joiprop.email();
 			}
@@ -360,6 +363,8 @@ function validateInput(inputObject, apiSpec) {
 		}
 		if (parm.req) {
 			joiprop = joiprop.required();
+		} else {
+			joiprop.allow(null, "");
 		}
 		if (parm.default) {
 			joiprop = joiprop.default(parm.default);
