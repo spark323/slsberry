@@ -337,7 +337,9 @@ function validateInput(inputObject, apiSpec) {
 	for (const prop in apiSpec.parameters) {
 		const parm = apiSpec.parameters[prop];
 		let joiprop = undefined;
-		if (parm.type.toLowerCase() === "integer") {
+		if (parm.type.toLowerCase() === "json" || parm.type.toLowerCase() === "object") {
+			joiprop = Joi.object();
+		} else if (parm.type.toLowerCase() === "integer") {
 			joiprop = Joi.number().integer();
 		} else if (parm.type.toLowerCase() === "float") {
 			joiprop = Joi.number();
@@ -373,16 +375,16 @@ function validateInput(inputObject, apiSpec) {
 			errors.forEach((err) => {
 				switch (err.code) {
 					case "any.empty":
-						err.message = "Value should not be empty";
+						err.message = `"${err.path[0]}" should not be empty`;
 						break;
 					case "string.min":
-						err.message = `Value should have at least ${err.local.limit} characters`;
+						err.message = `"${err.path[0]}" should have at least ${err.local.limit} characters`;
 						break;
 					case "string.max":
-						err.message = `Value should have at most ${err.local.limit} characters`;
+						err.message = `"${err.path[0]}" should have at most ${err.local.limit} characters`;
 						break;
 					case "string.pattern.base":
-						err.message = `invalid string format`;
+						err.message = `invalid string format for "${err.path[0]}"`;
 						break;
 					default:
 						break;
