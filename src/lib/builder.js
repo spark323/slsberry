@@ -619,13 +619,16 @@ function createPostmanImport(apiSpecList, stage) {
             }
 
             if (api.responses.content) {
+                const statusCode = api.responses.statusCode ? api.responses.statusCode : 200
+
                 paths[_property][method].responses = {
-                    "200": {
+                    [statusCode]: {
                         description: api.responses.description,
                     }
                 }
-                paths[_property][method].responses["200"]["content"] = {};
-                paths[_property][method].responses["200"]["content"][api.responses.content] = {
+
+                paths[_property][method].responses[statusCode]["content"] = {};
+                paths[_property][method].responses[statusCode]["content"][api.responses.content] = {
 
                     schema: {
                         type: api.responses.schema.type,
@@ -635,8 +638,7 @@ function createPostmanImport(apiSpecList, stage) {
                     }
                 }
                 for (var ptr in api.responses.schema.properties) {
-
-                    paths[_property][method].responses["200"]["content"][api.responses.content]["schema"]["properties"][ptr] = {
+                    paths[_property][method].responses[statusCode]["content"][api.responses.content]["schema"]["properties"][ptr] = {
                         type: api.responses.schema.properties[ptr].type.toLowerCase(),
                         description: api.responses.schema.properties[ptr].desc,
                         items: api.responses.schema.properties[ptr].items
