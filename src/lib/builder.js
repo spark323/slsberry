@@ -900,6 +900,27 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                                     }
                                 )
                             }
+                            //dynamodb/kinesis stream
+                            else if (element.type == "dynamodb_stream") {
+                                funcObject.events.push(
+                                    {
+                                        stream: {
+                                            type: "dynamodb",
+                                            arn: element.arn,
+                                        }
+                                    }
+                                )
+                            }
+                            else if (element.type == "kinesis_stream") {
+                                funcObject.events.push(
+                                    {
+                                        stream: {
+                                            type: "kinesis",
+                                            arn: element.arn,
+                                        }
+                                    }
+                                )
+                            }
                             else if (element.type == "cloudFront") {
                                 funcObject.events.push(
                                     {
