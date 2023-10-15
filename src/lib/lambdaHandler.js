@@ -394,7 +394,10 @@ function validateInput(inputObject, apiSpec) {
 		});
 		joiObject[prop] = joiprop;
 	}
-
+	//원하는게 없으면
+	if (Object.keys(joiObject).length < 1) {
+		return { passed: true };
+	}
 	let schema = Joi.object(joiObject).unknown(true);
 	//with 처리
 	for (const prop in apiSpec.parameters) {
