@@ -4,11 +4,11 @@
 		"@notionhq/client": "^2.0.0",
 		"dotenv": "^16.0.2",
 		"fs": "^0.0.1-security",
+		"joi": "^17.10.1",
 		"js-base64": "^3.6.0",
 		"js-yaml": "^4.0.0",
 		"moment": "^2.29.4",
 		"path": "^0.12.7",
-		"joi": "^17.10.1",
 		"yargs": "^16.2.0"
 	},
 	"version": "0.0.34",
@@ -28,5 +28,8 @@
 	"author": {
 		"name": "Spark",
 		"email": "innocentchris@gmail.com"
+	},
+	"devDependencies": {
+		"jest": "^29.7.0"
 	}
 }

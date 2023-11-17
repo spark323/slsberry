@@ -597,11 +597,41 @@ function createPostmanImport(apiSpecList, stage) {
     const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
 
     const host = projectInfo.host;
+    const sortedApiSpecList = sortApiSpecListByPath(apiSpecList);
+    const paths = generateOasPaths(sortedApiSpecList);
 
+    const all = {
+        "openapi": "3.0.0",
+        info: {
 
-    let paths = {};
-    //경로에 따라 정렬
-    const obj = sortApiSpecListByPath(apiSpecList);
+            ...projectInfo.info
+        },
+
+        servers: projectInfo.servers,
+        paths: paths,
+        components: {
+            securitySchemes:
+            {
+                bearerAuth:
+                {
+                    type: "http",
+                    scheme: "bearer"
+                }
+            }
+        }
+    }
+    return all;
+}
+
+/**
+ * generate oas.paths by iterating apiSpecList
+ * @param {Object} apiSpecList
+ * @returns {Object} oas.paths
+ */
+function generateOasPaths(apiSpecList) {
+    
+    const paths = {};
+    const obj = apiSpecList;
 
     for (var property in obj) {
         const _property = "/" + property;
@@ -676,9 +706,67 @@ function createPostmanImport(apiSpecList, stage) {
 
 
             paths[_property][method].parameters = [];
-            if (method == "get" || method == "delete") {
-                for (var parmName in api.parameters) {
-                    const parm = api.parameters[parmName];
+
+            let requireds = [];
+            let proprs = {};
+
+            for (var parmName in api.parameters) {
+                const parm = api.parameters[parmName];
+
+                if (parm.in == "path") {
+
+                    paths[_property][method].parameters.push(
+                        {
+                            name: parmName,
+                            in: "path",
+                            description: parm.desc,
+                            required: parm.req,
+                            schema: { type: parm.type.toLowerCase() }
+                        }
+                    )
+                }
+
+                if (parm.in == "header") {
+
+                    paths[_property][method].parameters.push(
+                        {
+                            name: parmName,
+                            in: "header",
+                            description: parm.desc,
+                            required: parm.req,
+                            schema: { type: parm.type.toLowerCase() }
+                        }
+                    )
+                }
+
+                if (parm.in == "query") {
+                        
+                    paths[_property][method].parameters.push(
+                        {
+                            name: parmName,
+                            in: "query",
+                            description: parm.desc,
+                            required: parm.req,
+                            schema: { type: parm.type.toLowerCase() }
+                        }
+                    )
+                }
+
+                if (parm.in == "body") {
+                    
+                    if (parm.req) {
+                        requireds.push(parmName);
+                    }
+                    proprs[parmName] = {
+                        description: parm.desc,
+                        type: parm.type.toLowerCase(),
+                        properties: parm.properties,
+                    }
+
+                }
+
+                // http method 가 GET or DELETE 이면서 in이 없는 경우 query로 간주한다. (하위호환)
+                if ((method == "get" || method == "delete") && !parm.in) {
 
                     paths[_property][method].parameters.push(
                         {
@@ -689,14 +777,11 @@ function createPostmanImport(apiSpecList, stage) {
                             schema: { type: parm.type.toLowerCase() }
                         }
                     )
-
                 }
-            }
-            if (method == "post" || method == "put") {
-                let requireds = [];
-                let proprs = {};
-                for (var parmName in api.parameters) {
-                    const parm = api.parameters[parmName];
+
+                // http method 가 POST or PUT 이면서 in이 없는 경우 body로 간주한다. (하위호환)
+                if ((method == "post" || method == "put") && !parm.in) {
+
                     if (parm.req) {
                         requireds.push(parmName);
                     }
@@ -705,7 +790,12 @@ function createPostmanImport(apiSpecList, stage) {
                         type: parm.type.toLowerCase(),
                         properties: parm.properties,
                     }
+
                 }
+
+            }
+
+            if (method == "post" || method == "put") {
                 paths[_property][method].requestBody = {
                     required: true,
                     content: {
@@ -723,28 +813,11 @@ function createPostmanImport(apiSpecList, stage) {
 
         }
     }
-    const all = {
-        "openapi": "3.0.0",
-        info: {
 
-            ...projectInfo.info
-        },
-
-        servers: projectInfo.servers,
-        paths: paths,
-        components: {
-            securitySchemes:
-            {
-                bearerAuth:
-                {
-                    type: "http",
-                    scheme: "bearer"
-                }
-            }
-        }
-    }
-    return all;
+    return paths;
 }
+
+
 function sortApiSpecListByPath(apiSpecList) {
     let obj = {};
     for (var category in apiSpecList) {
@@ -1087,3 +1160,4 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
 module.exports.generateServerlessFunction = generateServerlessFunction;
 module.exports.generateExportFile = generateExportFile;
 module.exports.uploadToNotion = uploadToNotion;
+module.exports.generateOasPaths = generateOasPaths;
