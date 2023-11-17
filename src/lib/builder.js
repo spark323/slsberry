@@ -611,6 +611,10 @@ function createPostmanImport(apiSpecList, stage) {
             const api = obj[property][method];
             paths[_property][method] = {};
             paths[_property][method].description = api.desc;
+            paths[_property][method].summary = api.summary;
+            paths[_property][method].operationId = api.operationId;
+            paths[_property][method].tags = [api.category, ...(api.tags || [])];
+
             if (!api.noAuth) {
                 paths[_property][method].security =
                     [{
