@@ -58,7 +58,7 @@ async function generateServerlessFunction(templateFile, stage = "dev", version =
 async function generateExportFile(stag) {
     const apiSpecList = await getApiSpecList();
 
-    let yamlStr = yaml.dump(createPostmanImport(apiSpecList, stag));
+    let yamlStr = yaml.dump(await createPostmanImport(apiSpecList, stag));
     fs.writeFileSync((stag) ? `api_doc_${stag}.yml` : `api_doc.yml`, yamlStr, 'utf8');
 }
 
@@ -592,13 +592,14 @@ async function doCreateNotionTable(apiSpecList, secret, stage, version, projectI
     }
 }
 //[todo4: 포스트맨에 Export 기능 추가하기]
-function createPostmanImport(apiSpecList, stage) {
+async function createPostmanImport(apiSpecList, stage) {
 
     const projectInfo = yaml.load(fs.readFileSync((stage) ? `./info_${stage}.yml` : `./info.yml`, "utf8"));
 
     const host = projectInfo.host;
     const sortedApiSpecList = sortApiSpecListByPath(apiSpecList);
     const paths = generateOasPaths(sortedApiSpecList);
+    const components = await generateOasComponents();
 
     const all = {
         "openapi": "3.0.0",
@@ -610,6 +611,7 @@ function createPostmanImport(apiSpecList, stage) {
         servers: projectInfo.servers,
         paths: paths,
         components: {
+            ...components,
             securitySchemes:
             {
                 bearerAuth:
@@ -815,6 +817,53 @@ function generateOasPaths(apiSpecList) {
     }
 
     return paths;
+}
+
+/**
+ * 
+ * @param {string} targetDir components 를 생성할 경로 (default: ./docs/components)
+ */
+async function generateOasComponents(targetDir = "./docs/components") {
+
+
+    // components 디렉토리가 없으면 빈 객체를 반환
+    if (!fs.existsSync(targetDir)) {
+        return {};
+    }
+
+    // components 디렉토리의 파일 목록을 가져옴
+    const root = await fspr.readdir(targetDir);
+
+    const components = {};
+    const validComponents = ["schemas", "parameters", "examples", "responses"];
+
+    for (const component of root) {
+
+        if (!validComponents.includes(component)) {
+            continue;
+        }
+        
+        components[component] = {};
+        const componentFiles = await fspr.readdir(`${targetDir}/${component}`);
+        for (const componentFile of componentFiles) {
+
+            // Read the YAML file
+            const fileContents = await fspr.readFile(`${targetDir}/${component}/${componentFile}`, 'utf8');
+
+            // Parse YAML to JavaScript object
+            const data = yaml.load(fileContents);
+
+            // Add the data to the components object
+            components[component] = {
+                ...components[component],
+                ...data,
+            };
+        };
+
+    }
+
+    return components;
+
 }
 
 
@@ -1161,3 +1210,4 @@ module.exports.generateServerlessFunction = generateServerlessFunction;
 module.exports.generateExportFile = generateExportFile;
 module.exports.uploadToNotion = uploadToNotion;
 module.exports.generateOasPaths = generateOasPaths;
+module.exports.generateOasComponents = generateOasComponents;

@@ -1,0 +1,19 @@
+NotFound:
+  description: Resource not found
+  content:
+    application/json:
+      schema:
+        title: Error
+        type: object
+        description: A standard error object.
+        x-tags:
+          - Common
+        properties:
+          status:
+            type: string
+            description: A code.
+          error:
+            type: string
+        required:
+          - status
+          - error

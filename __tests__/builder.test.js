@@ -1,4 +1,4 @@
-const { generateOasPaths } = require('../src/lib/builder');
+const { generateOasPaths, generateOasComponents } = require('../src/lib/builder');
 
 describe('builder', () => {
   
@@ -354,6 +354,42 @@ describe('builder', () => {
           }
         }
       });
+
+    });
+
+  });
+
+  describe('generateOasComponents', () => {
+
+    test('if there is no target dir, return empty object', async () => {
+
+      const result = await generateOasComponents('__tests__/no_dir');
+
+      expect(result).toEqual({});
+
+    });
+
+    test('should generate components properly', async () => {
+
+      const components = await generateOasComponents('__tests__/docs/components');
+      
+      expect(components).toHaveProperty('schemas');
+      expect(components).toHaveProperty('parameters');
+      expect(components).toHaveProperty('schemas');
+
+      expect(components.schemas).not.toHaveProperty('somename'); // file name이 아니라, schema name이다.
+      expect(components.schemas).toHaveProperty('Todo');
+      expect(components.schemas).toHaveProperty('User');
+
+      expect(components.parameters).toHaveProperty('limit');
+      expect(components.parameters).toHaveProperty('page');
+
+      expect(components.responses).toHaveProperty('NotFound');
+      expect(components.responses).toHaveProperty('Unauthorized');
+
+      expect(components.examples).toHaveProperty('todo');
+      expect(components.examples).toHaveProperty('user');
+
 
     });
 
