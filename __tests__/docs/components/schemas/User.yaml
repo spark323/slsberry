@@ -1,0 +1,31 @@
+User:
+  description: ''
+  type: object
+  title: User
+  properties:
+    userId:
+      type: number
+      description: ID of the user
+      readOnly: true
+    firstName:
+      type: string
+      minLength: 1
+      description: ''
+    lastName:
+      type: string
+      minLength: 1
+      description: ''
+    phoneNumber:
+      type: string
+      minLength: 1
+      description: Official Phone Number
+    emailAddress:
+      type: string
+      minLength: 1
+      description: Work Email Address
+  required:
+    - userId
+    - firstName
+    - lastName
+    - phoneNumber
+    - emailAddress

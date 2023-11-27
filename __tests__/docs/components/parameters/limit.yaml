@@ -1,0 +1,7 @@
+limit:
+  name: limit
+  in: query
+  required: false
+  schema:
+    type: number
+  description: Return a limited set of results *I'm a shared parameter. I can be reused in multiple endpoints!*

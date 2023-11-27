@@ -1,0 +1,7 @@
+page:
+  name: page
+  in: query
+  required: false
+  schema:
+    type: number
+  description: Return the page number
