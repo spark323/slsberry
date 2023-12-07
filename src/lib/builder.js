@@ -906,7 +906,7 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                 if (item && (item.disabled !== true) && (!(item.disabled_stages && item.disabled_stages.includes(stage)))) {
                     const nameArr = item.name.split("/");
                     let funcObject = {
-                        name: item.functionName ? item.functionName : (`\${self:service}_${stage}_${version}_${nameArr.join("_")}`),
+                        name: item.functionName ? item.functionName : (`\${self:service}_${stage}_${version}_${(item.operationId).replace(/\./g, "_").replace(/[{}]/g, "_")}`),
                         handler: `src/lambda/${item.name}.handler`,
                         events: [],
                     };
@@ -1165,7 +1165,7 @@ async function printServerlessFunction(templateFile, apiSpecList, stage, version
                     if (item.ephemeralStorageSize) {
                         funcObject["ephemeralStorageSize"] = parseInt(item.ephemeralStorageSize);
                     }
-                    functions[`${nameArr.join("_")}`] = funcObject;
+                    functions[(item.operationId).replace(/\./g, "_")] = funcObject;
                 }
             });
         }
