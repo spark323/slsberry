@@ -5,8 +5,8 @@ const {
   getApiSpecList,
   createPostmanImport,
   printServerlessFunction,
-  createNotionTable,
 } = require("./builder");
+const { createNotionTable } = require("./notion");
 
 /*
 svlsbdr의 진입점
