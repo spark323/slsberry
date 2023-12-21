@@ -3,30 +3,8 @@ const fs = require("fs");
 const fspr = require("fs").promises;
 var path = require("path");
 var moment = require("moment");
+const { findAllByKey, replaceAll, replaceHttpMethod } = require("./utils");
 
-// nested object에서 key 이름을 검색한다
-// https://stackoverflow.com/a/57683319/19565265
-function findAllByKey(obj, keyToFind) {
-  return Object.entries(obj).reduce(
-    (acc, [key, value]) =>
-      key === keyToFind
-        ? acc.concat(value)
-        : typeof value === "object" && value
-        ? acc.concat(findAllByKey(value, keyToFind))
-        : acc,
-    []
-  );
-}
-function replaceAll(str, find, replace) {
-  return str.replace(new RegExp(find, "g"), replace);
-}
-function replaceHttpMethod(_str) {
-  let str = _str.replace("/post", "");
-  str = str.replace("/get", "");
-  str = str.replace("/put", "");
-  str = str.replace("/delete", "");
-  return str;
-}
 /*
 경로를 iterate하면서 모든 파일 목록을 생성한다.
 */
