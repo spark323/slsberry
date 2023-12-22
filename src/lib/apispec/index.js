@@ -1,57 +1,89 @@
 const yaml = require("js-yaml");
 const fs = require("fs");
 const fspr = require("fs").promises;
+const path = require("path");
 const { findAllByKey, replaceAll, replaceHttpMethod } = require("../utils");
-/*
-경로를 iterate하면서 모든 파일 목록을 생성한다.
-*/
+
+/**
+ * Recursively generates a list of all files in the specified directory and its subdirectories.
+ *
+ * @param {string} dir - The directory path to iterate.
+ * @param {Array} arr - An array to store the generated file list.
+ * @returns {Promise<Array>} - A promise that resolves to an array containing objects with 'path' property for each file.
+ */
 async function getFunctionList(dir, arr) {
+  // Get a list of files in the specified directory
   const result = await fspr.readdir(dir);
+
+  // Iterate through each file in the directory
   let prom = result.map(async (file) => {
+    // Resolve the absolute path of the file
     file = path.resolve(dir, file);
+
+    // Get the file information (stats)
     const element = await fspr.stat(file);
+
+    // Check if the file is a directory
     if (element.isDirectory()) {
+      // If it's a directory, recursively call getFunctionList for the subdirectory
       const newar = await getFunctionList(file, arr);
-      arr.concat(newar);
+      arr.concat(newar); // [bugfix] Use `arr = arr.concat(newar)` to concatenate arrays
     } else {
+      // If it's a file, add an object with the file path to the array
       arr.push({ path: file });
     }
   });
+
+  // Wait for all promises to be resolved
   await Promise.all(prom);
+
+  // Return the final array containing file objects
   return arr;
 }
 
-/*
-serverless.yml 파일에 쓰기 전에 람다 함수의 목록을 작성한다.
-*/
-async function getApiSpecList() {
-  //[todo1: 소스파일 경로 지정할 수 있도록 변경]
-  let files = await getFunctionList("./src/lambda", []);
+/**
+ * Retrieves a list of API specifications from Lambda function files.
+ *
+ * @param {[{ path: string }]} targetFiles - An array containing objects with 'path' property for each file.
+ * @returns {Object} - An object containing API specifications categorized by function and any errors encountered.
+ */
+async function getApiSpecList(targetFiles) {
+  // Retrieve a list of function files from the specified directory (e.g., "./src/lambda")
+  const files = targetFiles;
+
+  // Initialize an object to store API specifications categorized by function and any errors
   let apiSpecList = { nomatch: [], error: [] };
+  // Iterate through each function file
   files.forEach((fileItem) => {
     const path = fileItem.path;
+
     try {
-      //serverless.yml에서 사용될 함수의 이름을 자동으로 지정한다. 이름은 src/lambda를 제외한 경로를 _ 로 나누어서 만든다
-      //예: src/lambda/build/test/get.js = build_test_get
-      //[todo2]Path Parsing 최적화
-      let name = "";
-      name = path.replace(".js", "");
+      // [todo2: Optimize path parsing]
+      // Generate a function name from the file path, excluding the "./src/lambda" part
+      let name = path.replace(".js", "");
       name = replaceAll(name, "\\\\", "/");
       let nameArr = name.split("/");
       const idxLambda = nameArr.indexOf("lambda");
       nameArr = nameArr.slice(idxLambda - 1);
       name = nameArr.slice(2).join("/");
+
+      // Read the content of the function file
+      let file;
       try {
         file = fs.readFileSync(path);
       } catch (e) {
         console.error(e);
       }
+
+      // Parse the function file to extract the API specification
       try {
         let obj = require(path).apiSpec;
         if (obj) {
+          // Add additional properties to the API specification object
           obj["name"] = name;
           obj["uri"] = replaceHttpMethod(name);
-          //추후 문서화를 대비해서 카테고리 별로 정렬
+
+          // Categorize the API specification by its "category"
           if (!apiSpecList[obj.category]) {
             apiSpecList[obj.category] = [];
           }
@@ -68,6 +100,8 @@ async function getApiSpecList() {
       console.error(e);
     }
   });
+
+  // Return the final API specification list
   return apiSpecList;
 }
 
@@ -691,7 +725,8 @@ module.exports = {
   getApiSpecList,
   createPostmanImport,
   printServerlessFunction,
-  // below are for testing
+  // below are only for testing
   generateOasPaths,
   generateOasComponents,
+  getFunctionList,
 };

@@ -1,8 +1,11 @@
 const {
   generateOasPaths,
   generateOasComponents,
+  getApiSpecList,
+  getFunctionList,
 } = require("../../src/lib/apispec/index.js");
 
+const path = require("path");
 describe("apispec", () => {
   describe("generateOasPaths", () => {
     test("기존 로직이 잘 동작하나요?", () => {
@@ -437,6 +440,41 @@ describe("apispec", () => {
 
       expect(components.examples).toHaveProperty("todo");
       expect(components.examples).toHaveProperty("user");
+    });
+  });
+
+  describe("getFunctionList function", () => {
+    // Test case (you can add more test cases based on different scenarios)
+    test("should generate a list of all files in the specified directory and its subdirectories", async () => {
+      const result = await getFunctionList("./src", []);
+
+      // Verify that the result is an array with objects containing a 'path' property
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+          }),
+        ])
+      );
+    });
+  });
+
+  describe("getApiSpecList function", () => {
+    // Test case (you can add more test cases based on different scenarios)
+    test("should retrieve API specifications from Lambda function files", async () => {
+      const result = await getApiSpecList([
+        {
+          path: path.join(__dirname, "../lambda/sample/post.js"),
+        },
+      ]);
+
+      // Verify that the result is an object with the expected structure
+      expect(result).toEqual(
+        expect.objectContaining({
+          nomatch: expect.any(Array),
+          error: expect.any(Array),
+        })
+      );
     });
   });
 });

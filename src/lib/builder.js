@@ -4,7 +4,8 @@ const {
   getApiSpecList,
   createPostmanImport,
   printServerlessFunction,
-} = require("./builder");
+  getFunctionList,
+} = require("./apispec");
 const { createNotionTable } = require("./notion");
 
 /*
@@ -16,13 +17,16 @@ async function generateServerlessFunction(
   version = 1
 ) {
   //먼저 src/lambda 이하의 파일을 파싱해 apiSpec들을 가져와서
-  const apiSpecList = await getApiSpecList();
+  const targetFiles = await getFunctionList("./src/lambda", []);
+  const apiSpecList = await getApiSpecList(targetFiles);
+
   //serverless.yml로 프린트한다.
   await printServerlessFunction(templateFile, apiSpecList, stage, version);
 }
 
 async function generateExportFile(stag) {
-  const apiSpecList = await getApiSpecList();
+  const targetFiles = await getFunctionList("./src/lambda", []);
+  const apiSpecList = await getApiSpecList(targetFiles);
 
   let yamlStr = yaml.dump(await createPostmanImport(apiSpecList, stag));
   fs.writeFileSync(
@@ -33,7 +37,9 @@ async function generateExportFile(stag) {
 }
 
 async function uploadToNotion(secret, stage, ver) {
-  const apiSpecList = await getApiSpecList();
+  const targetFiles = await getFunctionList("./src/lambda", []);
+  const apiSpecList = await getApiSpecList(targetFiles);
+
   await createNotionTable(apiSpecList, secret, stage, ver);
 }
 
