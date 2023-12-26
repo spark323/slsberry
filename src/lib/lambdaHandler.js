@@ -7,32 +7,6 @@ const Joi = require("joi");
  * @return {HandleTestInputResult} { inputObject, validateInputObject }
  */
 function handleTestInput(event, apiSpec) {
-	if (event.testing) {
-
-		if (event.useAWSSDKV3) {
-			const { SharedIniFileCredentials } = require("@aws-sdk/credential-provider-ini");
-			process.env.sharedCredentials = new SharedIniFileCredentials({ profile: event.testProfile });
-		}
-		else {
-			var AWS = require("aws-sdk");
-			var credentials = new AWS.SharedIniFileCredentials({ profile: event.testProfile });
-			AWS.config.credentials = credentials;
-		}
-		process.env.enviroment = "jest";
-		process.env.TZ = "Asia/Seoul";
-		process.env.app = event.app;
-		process.env.stage = event.stage;
-		process.env.testing = true;
-		if (event.hasOwnProperty("requestContext")) {
-			event["requestContext"]["identity"] = { sourceIp: "-" };
-			event["requestContext"]["http"] = { sourceIp: "-" };
-		} else {
-			event["requestContext"] = { identity: { sourceIp: "-" }, http: { sourceIp: "-" } };
-		}
-		event.env.forEach((item, index) => {
-			process.env[item.key] = item.value;
-		});
-	}
 	const method = apiSpec.method ? apiSpec.method.toLowerCase() : apiSpec.event[0].method ? apiSpec.event[0].method.toLowerCase() : "post";
 	let inputObject;
 	if (method === "get" || method === "delete" || method == "websocket") {
