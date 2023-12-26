@@ -9,7 +9,7 @@ const { findAllByKey, replaceAll, replaceHttpMethod } = require("../utils");
  *
  * @param {string} dir - The directory path to iterate.
  * @param {Array} arr - An array to store the generated file list.
- * @returns {Promise<Array>} - A promise that resolves to an array containing objects with 'path' property for each file.
+ * @returns {Promise<[{ path: string }]>} - A promise that resolves to an array containing objects with 'path' property for each file.
  */
 async function getFunctionList(dir, arr) {
   // Get a list of files in the specified directory
