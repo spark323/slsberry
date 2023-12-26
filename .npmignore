@@ -1,0 +1,13 @@
+# tests
+test
+
+# examples
+examples
+
+# package
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# doc
+doc

@@ -3,7 +3,7 @@ const {
   generateOasComponents,
   getApiSpecList,
   getFunctionList,
-} = require("../../src/lib/apispec/index.js");
+} = require("../../../src/lib/apispec/index.js");
 
 const path = require("path");
 describe("apispec", () => {
@@ -421,7 +421,7 @@ describe("apispec", () => {
 
     test("should generate components properly", async () => {
       const components = await generateOasComponents(
-        "__tests__/docs/components"
+        "examples/docs/components"
       );
 
       expect(components).toHaveProperty("schemas");
@@ -464,7 +464,7 @@ describe("apispec", () => {
     test("should retrieve API specifications from Lambda function files", async () => {
       const result = await getApiSpecList([
         {
-          path: path.join(__dirname, "../lambda/sample/post.js"),
+          path: path.join(__dirname, "../../../examples/lambda/sample/post.js"),
         },
       ]);
 
