@@ -1,4 +1,4 @@
-var AWS = require("aws-sdk");
+
 var Base64 = require("js-base64").Base64;
 const Joi = require("joi");
 /**
@@ -8,8 +8,16 @@ const Joi = require("joi");
  */
 function handleTestInput(event, apiSpec) {
 	if (event.testing) {
-		var credentials = new AWS.SharedIniFileCredentials({ profile: event.testProfile });
-		AWS.config.credentials = credentials;
+
+		if (event.useAWSSDKV3) {
+			const { SharedIniFileCredentials } = require("@aws-sdk/credential-provider-ini");
+			process.env.sharedCredentials = new SharedIniFileCredentials({ profile: event.testProfile });
+		}
+		else {
+			var AWS = require("aws-sdk");
+			var credentials = new AWS.SharedIniFileCredentials({ profile: event.testProfile });
+			AWS.config.credentials = credentials;
+		}
 		process.env.enviroment = "jest";
 		process.env.TZ = "Asia/Seoul";
 		process.env.app = event.app;
@@ -253,7 +261,7 @@ function createErrorResponseV2(httpCode, body, reason = undefined) {
 	//console.log(response);
 	return response;
 }
-async function sendError(error, event) {
+async function sendError(error, event, errorHandler = undefined) {
 	if (!event.testing) {
 		const path = `(${process.env.version})${process.env.app}${event.requestContext.path}/${event.requestContext.httpMethod}`;
 
@@ -275,12 +283,8 @@ async function sendError(error, event) {
 			}),
 		};
 		//console.log(params);
-		try {
-			const lambda = new AWS.Lambda();
-			const result = await lambda.invoke(params).promise();
-			//  console.log(result);
-		} catch (e) {
-			console.error(e);
+		if (errorHandler) {
+			await errorHandler(params);
 		}
 	}
 }

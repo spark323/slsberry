@@ -1,6 +1,7 @@
 {
 	"name": "slsberry",
 	"dependencies": {
+		"@aws-sdk/credential-provider-ini": "^3.478.0",
 		"@notionhq/client": "^2.0.0",
 		"dotenv": "^16.0.2",
 		"fs": "^0.0.1-security",
