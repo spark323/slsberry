@@ -1,7 +1,6 @@
 {
 	"name": "slsberry",
 	"dependencies": {
-		"@aws-sdk/credential-provider-ini": "^3.478.0",
 		"@notionhq/client": "^2.0.0",
 		"dotenv": "^16.0.2",
 		"fs": "^0.0.1-security",
@@ -12,7 +11,7 @@
 		"path": "^0.12.7",
 		"yargs": "^16.2.0"
 	},
-	"version": "0.0.42",
+	"version": "0.0.43",
 	"description": "A CLI tool to generate serverless.yml",
 	"bin": {
 		"slsberry": "src/lib/buildServerlessYml.js"
