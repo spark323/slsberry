@@ -29,7 +29,7 @@ export type ApiSpec = {
       in: "query" | "header" | "cookie";
     };
   };
-  requestBody: {};
+  requestBody: Record<string, unknown>;
   responses: {
     [key: string]: {
       description: string;
