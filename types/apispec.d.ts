@@ -3,7 +3,6 @@ export type ApiSpec = {
   event: (ApiSpecRestApiEvent | ApiSpecSqsEvent | ApiSpecWebsocketEvent)[];
   operationId: string;
   /**
-   * @deprecated
    * @description name of the serverless function
    * @default ApiSpec#operationId
    */
