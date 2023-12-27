@@ -18,7 +18,7 @@ try {
     );
   } else {
     argv.x
-      ? builder.generateExportFile(argv.x)
+      ? builder.generateOpenApiSpecFile(argv.x)
       : builder.generateServerlessFunction(
           `./${templateFile}`,
           argv.stage ? argv.stage : process.env.STAGE,

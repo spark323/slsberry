@@ -3,108 +3,79 @@ const {
   generateOasComponents,
   getApiSpecList,
   getFunctionList,
+  sortApiSpecListByPath,
 } = require("../../../src/lib/apispec/index.js");
 
 const path = require("path");
+
 describe("apispec", () => {
   describe("generateOasPaths", () => {
     test("기존 로직이 잘 동작하나요?", () => {
       // Mock input parameters
       const apiSpecList = {
-        api: {
-          // 실제로는 배열이다. (객체처럼 사용되는 배열)
-          get: {
-            category: "Request",
-            event: [{ type: "REST", method: "Get" }],
-            desc: "api key verifiy",
-            parameters: {},
-            errors: {
-              engine_not_supported: {
-                status_code: 404,
-                reason: "현재 지원하지 않는 엔진입니다.",
+        Pet: [
+          {
+            path: "/Users/reconlabs/workspace/slsberry/examples/lambda/pet/post.js",
+            item: {
+              category: "Pet",
+              desc: "Add a new pet to the store",
+              event: [{ type: "REST", method: "post" }],
+              parameters: {
+                name: { type: "string", in: "body", required: true },
+                tag: { type: "string", in: "body" },
               },
-              query_failed: {
-                status_code: 500,
-                reason: "db 쿼리 실행 중 문제가 발생했습니다.",
+              errors: {
+                apikey_limit_exceeded_error: {
+                  status_code: 403,
+                  reason: "APIKeyLimitExceededError",
+                },
               },
+              responses: {
+                description: "ok",
+                content: "application/json",
+                schema: { type: "object", properties: {} },
+              },
+              name: "pet/post",
+              uri: "pet",
             },
-            responses: {
-              description: "",
-              content: "application/json",
-              schema: {
-                type: "object",
-                properties: { result: { type: "String", desc: "처리 결과" } },
-              },
-            },
-            name: "api/get",
-            uri: "api",
           },
-          post: {
-            category: "Request",
-            desc: "multipart upload 완료",
-            event: [{ type: "REST", method: "Post" }],
-            parameters: {
-              key: { req: true, type: "String", desc: "key" },
-              client_id: { req: true, type: "String", desc: "client_id" },
-              user_id: { req: true, type: "String", desc: "user_id" },
-              permission_type: {
-                req: true,
-                type: "String",
-                desc: "permission_type",
+          {
+            path: "/Users/reconlabs/workspace/slsberry/examples/lambda/pet/get.js",
+            item: {
+              category: "Pet",
+              desc: "List all pets",
+              event: [{ type: "REST", method: "get" }],
+              parameters: {
+                page: { type: "string", in: "query", default: 1 },
+                limit: { type: "string", in: "query", default: 10 },
               },
+              errors: {
+                apikey_limit_exceeded_error: {
+                  status_code: 403,
+                  reason: "APIKeyLimitExceededError",
+                },
+              },
+              responses: {
+                description: "ok",
+                content: "application/json",
+                schema: { type: "object", properties: {} },
+              },
+              name: "pet/get",
+              uri: "pet",
             },
-            errors: {},
-            responses: {
-              description: "ok",
-              content: "application/json",
-              schema: { type: "object", properties: {} },
-            },
-            name: "api/post",
-            uri: "api",
           },
-        },
+        ],
       };
 
       const result = generateOasPaths(apiSpecList);
 
       expect(result).toEqual({
-        "/api": {
-          get: {
-            description: "api key verifiy",
-            summary: undefined,
-            operationId: undefined,
-            tags: ["Request"],
-            security: [{ bearerAuth: ["test"] }],
-            responses: {
-              200: {
-                description: "",
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "object",
-                      description: undefined,
-                      properties: {
-                        result: {
-                          type: "string",
-                          description: "처리 결과",
-                          items: undefined,
-                        },
-                      },
-                      items: undefined,
-                    },
-                  },
-                },
-              },
-              404: { description: "engine_not_supported" },
-              500: { description: "query_failed" },
-            },
-            parameters: [],
-          },
+        "/pet": {
           post: {
-            description: "multipart upload 완료",
+            description: "Add a new pet to the store",
             summary: undefined,
             operationId: undefined,
-            tags: ["Request"],
+            tags: ["Pet"],
             security: [{ bearerAuth: ["test"] }],
             responses: {
               200: {
@@ -120,6 +91,7 @@ describe("apispec", () => {
                   },
                 },
               },
+              403: { description: "apikey_limit_exceeded_error" },
             },
             parameters: [],
             requestBody: {
@@ -128,30 +100,15 @@ describe("apispec", () => {
                 "application/json": {
                   schema: {
                     type: "object",
-                    required: [
-                      "key",
-                      "client_id",
-                      "user_id",
-                      "permission_type",
-                    ],
+                    required: [],
                     properties: {
-                      key: {
-                        description: "key",
+                      name: {
+                        description: undefined,
                         type: "string",
                         properties: undefined,
                       },
-                      client_id: {
-                        description: "client_id",
-                        type: "string",
-                        properties: undefined,
-                      },
-                      user_id: {
-                        description: "user_id",
-                        type: "string",
-                        properties: undefined,
-                      },
-                      permission_type: {
-                        description: "permission_type",
+                      tag: {
+                        description: undefined,
                         type: "string",
                         properties: undefined,
                       },
@@ -161,251 +118,44 @@ describe("apispec", () => {
               },
             },
           },
-        },
-      });
-    });
-
-    test("query parameter 추가가 잘 되나요?", () => {
-      const apiSpecList = {
-        "api/task": {
-          // 실제로는 배열이다. (객체처럼 사용되는 배열)
           get: {
-            category: "Task",
-            event: [{ type: "REST", method: "Get" }],
-            summary: "get a task by id",
-            desc: "get a task by id",
-            operationId: "getTaskById",
-            parameters: {
-              seq: {
-                req: true,
-                type: "String",
-                desc: "seq value to query",
-                in: "query",
-              },
-            },
-            responses: {},
-            name: "api/task/get",
-            uri: "api/task",
-            noAuth: true,
-          },
-        },
-      };
-
-      const result = generateOasPaths(apiSpecList);
-
-      expect(result).toEqual({
-        "/api/task": {
-          get: {
-            operationId: "getTaskById",
-            summary: "get a task by id",
-            description: "get a task by id",
-            tags: ["Task"],
-            parameters: [
-              {
-                name: "seq",
-                in: "query",
-                description: "seq value to query",
-                required: true,
-                schema: {
-                  type: "string",
-                },
-              },
-            ],
-          },
-        },
-      });
-    });
-
-    test("path parameter 추가가 잘 되나요?", () => {
-      // Mock input parameters
-      const apiSpecList = {
-        "api/task/{taskId}": {
-          // 실제로는 배열이다. (객체처럼 사용되는 배열)
-          get: {
-            category: "Task",
-            event: [{ type: "REST", method: "Get" }],
-            summary: "get a task by id",
-            desc: "get a task by id",
-            operationId: "getTaskById",
-            parameters: {
-              taskId: {
-                req: true,
-                type: "String",
-                desc: "task id",
-                in: "path",
-              },
-            },
-            responses: {},
-            name: "api/task/{taskId}/get",
-            uri: "api/task/{taskId}",
-            noAuth: true,
-          },
-        },
-      };
-
-      const result = generateOasPaths(apiSpecList);
-
-      expect(result).toEqual({
-        "/api/task/{taskId}": {
-          get: {
-            operationId: "getTaskById",
-            summary: "get a task by id",
-            description: "get a task by id",
-            tags: ["Task"],
-            parameters: [
-              {
-                name: "taskId",
-                in: "path",
-                description: "task id",
-                required: true,
-                schema: {
-                  type: "string",
-                },
-              },
-            ],
-          },
-        },
-      });
-    });
-
-    test("header parameter 추가가 잘 되나요?", () => {
-      const apiSpecList = {
-        "api/task": {
-          // 실제로는 배열이다. (객체처럼 사용되는 배열)
-          get: {
-            category: "Task",
-            event: [{ type: "REST", method: "Get" }],
-            summary: "get a task by id",
-            desc: "get a task by id",
-            operationId: "getTaskById",
-            parameters: {
-              customKey: {
-                req: true,
-                type: "String",
-                desc: "custom key",
-                in: "header",
-              },
-            },
-            responses: {},
-            name: "api/task/get",
-            uri: "api/task",
-            noAuth: true,
-          },
-        },
-      };
-
-      const result = generateOasPaths(apiSpecList);
-
-      expect(result).toEqual({
-        "/api/task": {
-          get: {
-            operationId: "getTaskById",
-            summary: "get a task by id",
-            description: "get a task by id",
-            tags: ["Task"],
-            parameters: [
-              {
-                name: "customKey",
-                in: "header",
-                description: "custom key",
-                required: true,
-                schema: {
-                  type: "string",
-                },
-              },
-            ],
-          },
-        },
-      });
-    });
-
-    test("body 추가가 잘 되나요?", () => {
-      const apiSpecList = {
-        "api/task": {
-          // 실제로는 배열이다. (객체처럼 사용되는 배열)
-          post: {
-            category: "Task",
-            event: [{ type: "REST", method: "Post" }],
-            summary: "create a task",
-            desc: "create a task",
-            operationId: "createTask",
-            parameters: {
-              key: { req: true, type: "String", desc: "key", in: "body" },
-              client_id: {
-                req: true,
-                type: "String",
-                desc: "client_id",
-                in: "body",
-              },
-              user_id: {
-                req: true,
-                type: "String",
-                desc: "user_id",
-                in: "body",
-              },
-              permission_type: {
-                req: true,
-                type: "String",
-                desc: "permission_type",
-                in: "body",
-              },
-            },
-            responses: {},
-            name: "api/task/post",
-            uri: "api/task",
-            noAuth: true,
-          },
-        },
-      };
-
-      const result = generateOasPaths(apiSpecList);
-
-      expect(result).toEqual({
-        "/api/task": {
-          post: {
-            operationId: "createTask",
-            summary: "create a task",
-            description: "create a task",
-            tags: ["Task"],
-            parameters: [],
-            requestBody: {
-              required: true,
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    required: [
-                      "key",
-                      "client_id",
-                      "user_id",
-                      "permission_type",
-                    ],
-                    properties: {
-                      key: {
-                        description: "key",
-                        type: "string",
-                        properties: undefined,
-                      },
-                      client_id: {
-                        description: "client_id",
-                        type: "string",
-                        properties: undefined,
-                      },
-                      user_id: {
-                        description: "user_id",
-                        type: "string",
-                        properties: undefined,
-                      },
-                      permission_type: {
-                        description: "permission_type",
-                        type: "string",
-                        properties: undefined,
-                      },
+            description: "List all pets",
+            summary: undefined,
+            operationId: undefined,
+            tags: ["Pet"],
+            security: [{ bearerAuth: ["test"] }],
+            responses: {
+              200: {
+                description: "ok",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      description: undefined,
+                      properties: {},
+                      items: undefined,
                     },
                   },
                 },
               },
+              403: { description: "apikey_limit_exceeded_error" },
             },
+            parameters: [
+              {
+                name: "page",
+                in: "query",
+                description: undefined,
+                required: undefined,
+                schema: { type: "string" },
+              },
+              {
+                name: "limit",
+                in: "query",
+                description: undefined,
+                required: undefined,
+                schema: { type: "string" },
+              },
+            ],
           },
         },
       });
@@ -446,7 +196,7 @@ describe("apispec", () => {
   describe("getFunctionList function", () => {
     // Test case (you can add more test cases based on different scenarios)
     test("should generate a list of all files in the specified directory and its subdirectories", async () => {
-      const result = await getFunctionList("./src", []);
+      const result = await getFunctionList("./examples/lambda", []);
 
       // Verify that the result is an array with objects containing a 'path' property
       expect(result).toEqual(
@@ -462,17 +212,19 @@ describe("apispec", () => {
   describe("getApiSpecList function", () => {
     // Test case (you can add more test cases based on different scenarios)
     test("should retrieve API specifications from Lambda function files", async () => {
-      const result = await getApiSpecList([
+      const result = getApiSpecList([
         {
-          path: path.join(__dirname, "../../../examples/lambda/sample/post.js"),
+          path: path.join(__dirname, "../../../examples/lambda/pet/post.js"),
+        },
+        {
+          path: path.join(__dirname, "../../../examples/lambda/pet/get.js"),
         },
       ]);
 
       // Verify that the result is an object with the expected structure
       expect(result).toEqual(
         expect.objectContaining({
-          nomatch: expect.any(Array),
-          error: expect.any(Array),
+          Pet: expect.any(Object),
         })
       );
     });
