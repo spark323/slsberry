@@ -66,7 +66,7 @@ async function getApiSpecList(targetFiles) {
 
       // Parse the function file to extract the API specification
       let obj;
-      if (process.env.module === "ESM") {
+      if (process.env.MODULE === "ESM") {
         obj = (await import(path)).apiSpec;
       } else {
         obj = require(path).apiSpec;

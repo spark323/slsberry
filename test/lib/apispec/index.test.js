@@ -232,7 +232,7 @@ describe("apispec", () => {
     // To test the ESM module system, we need to pass the --experimental-vm-modules flag to Node.js like this:
     // node --experimental-vm-modules 'node_modules/.bin/jest'
     test.skip("should supports ESM module system", async () => {
-      process.env.module = "ESM";
+      process.env.MODULE = "ESM";
       const result = await getApiSpecList([
         {
           path: path.join(__dirname, "../../../examples/lambda/pet/post.mjs"),
