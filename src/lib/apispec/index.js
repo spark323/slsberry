@@ -211,11 +211,10 @@ async function printServerlessFunction(
               funcObject.events.push({
                 httpApi: {
                   path: `/${stage}/${item.uri}`,
-                  method: `${
-                    item.method
+                  method: `${item.method
                       ? item.method.toLowerCase()
                       : item.event.method.toLowerCase()
-                  }`,
+                    }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }
                     : undefined,
@@ -464,7 +463,10 @@ async function printServerlessFunction(
       });
     }
   }
-  serverlessTemplet1.functions = functions;
+  serverlessTemplet1.functions = {
+    ...functions,
+    ...serverlessTemplet1.functions
+  }
   serverlessTemplet1.provider.stage = `${stage}-${version}`;
   if (!serverlessTemplet1.resources) {
     serverlessTemplet1.resources = {
