@@ -1,14 +1,29 @@
 const apiSpec = {
-  category: "TEST",
-  desc: "sample",
+  category: "Pet",
+  desc: "Add a new pet to the store",
   event: [
     {
       type: "REST",
       method: "post",
     },
   ],
-  parameters: {},
-  errors: {},
+  parameters: {
+    name: {
+      type: "string",
+      in: "body",
+      required: true,
+    },
+    tag: {
+      type: "string",
+      in: "body",
+    },
+  },
+  errors: {
+    apikey_limit_exceeded_error: {
+      status_code: 403,
+      reason: "APIKeyLimitExceededError",
+    },
+  },
   responses: {
     description: "ok",
     content: "application/json",

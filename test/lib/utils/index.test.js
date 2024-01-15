@@ -2,7 +2,7 @@ const {
   findAllByKey,
   replaceAll,
   replaceHttpMethod,
-} = require("../../src/lib/utils");
+} = require("../../../src/lib/utils");
 
 describe("findAllByKey function", () => {
   // Test case 1

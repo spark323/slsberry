@@ -14,9 +14,10 @@
 	"version": "0.0.44",
 	"description": "A CLI tool to generate serverless.yml",
 	"bin": {
-		"slsberry": "src/lib/buildServerlessYml.js"
+		"slsberry": "bin/cli.js"
 	},
-	"main": "src/lib/index.js",
+	"main": "src/index.js",
+	"types": "./types/index.d.ts",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/spark323/slsberry.git"

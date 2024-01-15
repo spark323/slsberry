@@ -9,7 +9,7 @@ const { findAllByKey, replaceAll, replaceHttpMethod } = require("../utils");
  *
  * @param {string} dir - The directory path to iterate.
  * @param {Array} arr - An array to store the generated file list.
- * @returns {Promise<Array>} - A promise that resolves to an array containing objects with 'path' property for each file.
+ * @returns {Promise<[{ path: string }]>} - A promise that resolves to an array containing objects with 'path' property for each file.
  */
 async function getFunctionList(dir, arr) {
   // Get a list of files in the specified directory
@@ -44,59 +44,40 @@ async function getFunctionList(dir, arr) {
 /**
  * Retrieves a list of API specifications from Lambda function files.
  *
- * @param {[{ path: string }]} targetFiles - An array containing objects with 'path' property for each file.
- * @returns {Object} - An object containing API specifications categorized by function and any errors encountered.
+ * @param {Array<{ path: string }>} targetFiles - An array containing objects with 'path' property for each file.
+ * @returns {{ [category: string]: import("../..").ApiSpec }} - An object containing API specifications categorized by function and any errors encountered.
  */
-async function getApiSpecList(targetFiles) {
-  // Retrieve a list of function files from the specified directory (e.g., "./src/lambda")
-  const files = targetFiles;
+function getApiSpecList(targetFiles) {
+  const apiSpecList = {};
 
-  // Initialize an object to store API specifications categorized by function and any errors
-  let apiSpecList = { nomatch: [], error: [] };
-  // Iterate through each function file
-  files.forEach((fileItem) => {
-    const path = fileItem.path;
+  targetFiles.forEach((fileItem) => {
+    const { path } = fileItem;
 
     try {
       // [todo2: Optimize path parsing]
       // Generate a function name from the file path, excluding the "./src/lambda" part
-      let name = path.replace(".js", "");
-      name = replaceAll(name, "\\\\", "/");
-      let nameArr = name.split("/");
+      const parsedPathName = path.replace(".js", "").replaceAll("\\\\", "/");
+      const nameArr = parsedPathName.split("/");
       const idxLambda = nameArr.indexOf("lambda");
-      nameArr = nameArr.slice(idxLambda - 1);
-      name = nameArr.slice(2).join("/");
-
-      // Read the content of the function file
-      let file;
-      try {
-        file = fs.readFileSync(path);
-      } catch (e) {
-        console.error(e);
-      }
+      const name = nameArr
+        .slice(idxLambda - 1)
+        .slice(2)
+        .join("/");
 
       // Parse the function file to extract the API specification
-      try {
-        let obj = require(path).apiSpec;
-        if (obj) {
-          // Add additional properties to the API specification object
-          obj["name"] = name;
-          obj["uri"] = replaceHttpMethod(name);
+      const obj = require(path).apiSpec;
+      if (obj) {
+        // Add additional properties to the API specification object
+        obj.operationId = obj.operationId || name;
+        obj.name = name;
+        obj.uri = replaceHttpMethod(name);
 
-          // Categorize the API specification by its "category"
-          if (!apiSpecList[obj.category]) {
-            apiSpecList[obj.category] = [];
-          }
-          apiSpecList[obj.category].push({ path: path, item: obj });
-        }
-      } catch (e) {
-        console.log("Error parsing ", path);
-        apiSpecList["error"].push({ path: path, obj: "error" });
-        console.error(e);
+        // Categorize the API specification by its "category"
+        apiSpecList[obj.category] = apiSpecList[obj.category] || [];
+        apiSpecList[obj.category].push({ path, item: obj });
       }
     } catch (e) {
-      console.log("Error parsing ", path);
-      apiSpecList["error"].push({ path: path, obj: "error" });
+      console.log(`Error parsing ${path}`);
       console.error(e);
     }
   });
@@ -105,62 +86,6 @@ async function getApiSpecList(targetFiles) {
   return apiSpecList;
 }
 
-//[todo4: 포스트맨에 Export 기능 추가하기]
-async function createPostmanImport(apiSpecList, stage) {
-  const projectInfo = yaml.load(
-    fs.readFileSync(stage ? `./info_${stage}.yml` : `./info.yml`, "utf8")
-  );
-
-  const host = projectInfo.host;
-  const sortedApiSpecList = sortApiSpecListByPath(apiSpecList);
-  const paths = generateOasPaths(sortedApiSpecList);
-  const components = await generateOasComponents();
-
-  const all = {
-    openapi: "3.0.0",
-    info: {
-      ...projectInfo.info,
-    },
-
-    servers: projectInfo.servers,
-    paths: paths,
-    components: {
-      ...components,
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-        },
-      },
-    },
-  };
-  return all;
-}
-
-function sortApiSpecListByPath(apiSpecList) {
-  let obj = {};
-  for (var category in apiSpecList) {
-    const prop = apiSpecList[category];
-    prop.forEach((itemt) => {
-      const item = itemt.item;
-
-      if (
-        !item ||
-        item.hide ||
-        (item.event.length > 0
-          ? item.event[0].type.toLowerCase() !== "rest"
-          : true)
-      ) {
-        return;
-      }
-      if (!obj[item.uri]) {
-        obj[item.uri] = [];
-      }
-      obj[item.uri][item.event[0].method.toLowerCase()] = item;
-    });
-  }
-  return obj;
-}
 /*
 가져온 apiSpec 리스트를 기반으로 serverless.yml파일을 만든다.
 */
@@ -507,14 +432,35 @@ async function printServerlessFunction(
  * @returns {Object} oas.paths
  */
 function generateOasPaths(apiSpecList) {
-  const paths = {};
-  const obj = apiSpecList;
+  const sortedApiSpecList = {};
+  for (var category in apiSpecList) {
+    const prop = apiSpecList[category];
+    prop.forEach((itemt) => {
+      const item = itemt.item;
 
-  for (var property in obj) {
+      if (
+        !item ||
+        item.hide ||
+        (item.event.length > 0
+          ? item.event[0].type.toLowerCase() !== "rest"
+          : true)
+      ) {
+        return;
+      }
+      if (!sortedApiSpecList[item.uri]) {
+        sortedApiSpecList[item.uri] = [];
+      }
+      sortedApiSpecList[item.uri][item.event[0].method.toLowerCase()] = item;
+    });
+  }
+
+  const paths = {};
+
+  for (var property in sortedApiSpecList) {
     const _property = "/" + property;
     paths[_property] = {};
-    for (var method in obj[property]) {
-      const api = obj[property][method];
+    for (var method in sortedApiSpecList[property]) {
+      const api = sortedApiSpecList[property][method];
       paths[_property][method] = {};
       paths[_property][method].description = api.desc;
       paths[_property][method].summary = api.summary;
@@ -725,9 +671,7 @@ async function generateOasComponents(targetDir = "./docs/components") {
 
 module.exports = {
   getApiSpecList,
-  createPostmanImport,
   printServerlessFunction,
-  // below are only for testing
   generateOasPaths,
   generateOasComponents,
   getFunctionList,
