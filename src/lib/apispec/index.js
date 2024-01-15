@@ -47,10 +47,10 @@ async function getFunctionList(dir, arr) {
  * @param {Array<{ path: string }>} targetFiles - An array containing objects with 'path' property for each file.
  * @returns {{ [category: string]: import("../..").ApiSpec }} - An object containing API specifications categorized by function and any errors encountered.
  */
-function getApiSpecList(targetFiles) {
+async function getApiSpecList(targetFiles) {
   const apiSpecList = {};
 
-  targetFiles.forEach((fileItem) => {
+  for (const fileItem of targetFiles) {
     const { path } = fileItem;
 
     try {
@@ -65,7 +65,13 @@ function getApiSpecList(targetFiles) {
         .join("/");
 
       // Parse the function file to extract the API specification
-      const obj = require(path).apiSpec;
+      let obj;
+      if (process.env.MODULE === "ESM") {
+        obj = (await import(path)).apiSpec;
+      } else {
+        obj = require(path).apiSpec;
+      }
+
       if (obj) {
         // Add additional properties to the API specification object
         obj.operationId = obj.operationId || name;
@@ -80,7 +86,7 @@ function getApiSpecList(targetFiles) {
       console.log(`Error parsing ${path}`);
       console.error(e);
     }
-  });
+  }
 
   // Return the final API specification list
   return apiSpecList;

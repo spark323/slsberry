@@ -19,7 +19,7 @@ async function generateServerlessFunction(
 ) {
   //먼저 src/lambda 이하의 파일을 파싱해 apiSpec들을 가져와서
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = getApiSpecList(targetFiles);
+  const apiSpecList = await getApiSpecList(targetFiles);
 
   //serverless.yml로 프린트한다.
   await printServerlessFunction(templateFile, apiSpecList, stage, version);
@@ -27,7 +27,7 @@ async function generateServerlessFunction(
 
 async function generateOpenApiSpecFile(stag) {
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = getApiSpecList(targetFiles);
+  const apiSpecList = await getApiSpecList(targetFiles);
 
   const projectInfo = yaml.load(
     fs.readFileSync(stage ? `./info_${stage}.yml` : `./info.yml`, "utf8")
@@ -66,7 +66,7 @@ async function generateOpenApiSpecFile(stag) {
 
 async function uploadToNotion(secret, stage, ver) {
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = getApiSpecList(targetFiles);
+  const apiSpecList = await getApiSpecList(targetFiles);
 
   createNotionTable(apiSpecList, secret, stage, ver);
 }

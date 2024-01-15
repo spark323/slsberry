@@ -212,12 +212,30 @@ describe("apispec", () => {
   describe("getApiSpecList function", () => {
     // Test case (you can add more test cases based on different scenarios)
     test("should retrieve API specifications from Lambda function files", async () => {
-      const result = getApiSpecList([
+      const result = await getApiSpecList([
         {
           path: path.join(__dirname, "../../../examples/lambda/pet/post.js"),
         },
         {
           path: path.join(__dirname, "../../../examples/lambda/pet/get.js"),
+        },
+      ]);
+
+      // Verify that the result is an object with the expected structure
+      expect(result).toEqual(
+        expect.objectContaining({
+          Pet: expect.any(Object),
+        })
+      );
+    });
+
+    // To test the ESM module system, we need to pass the --experimental-vm-modules flag to Node.js like this:
+    // node --experimental-vm-modules 'node_modules/.bin/jest'
+    test.skip("should supports ESM module system", async () => {
+      process.env.MODULE = "ESM";
+      const result = await getApiSpecList([
+        {
+          path: path.join(__dirname, "../../../examples/lambda/pet/post.mjs"),
         },
       ]);
 
