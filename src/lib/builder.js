@@ -30,7 +30,7 @@ async function generateOpenApiSpecFile(stag) {
   const apiSpecList = await getApiSpecList(targetFiles);
 
   const projectInfo = yaml.load(
-    fs.readFileSync(stage ? `./info_${stage}.yml` : `./info.yml`, "utf8")
+    fs.readFileSync(stag ? `./info_${stag}.yml` : `./info.yml`, "utf8")
   );
 
   const paths = generateOasPaths(apiSpecList);
@@ -58,7 +58,7 @@ async function generateOpenApiSpecFile(stag) {
   let yamlStr = yaml.dump(openApiSpec);
 
   fs.writeFileSync(
-    stag ? `api_doc_${stag}.yml` : `api_doc.yml`,
+    stag ? `${projectInfo.info.title}_doc_${stag}.yml` : `api_doc.yml`,
     yamlStr,
     "utf8"
   );
