@@ -143,8 +143,8 @@ async function printServerlessFunction(
                 httpApi: {
                   path: `/${stage}/${item.uri}`,
                   method: `${item.method
-                      ? item.method.toLowerCase()
-                      : item.event.method.toLowerCase()
+                    ? item.method.toLowerCase()
+                    : item.event.method.toLowerCase()
                     }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }
@@ -504,13 +504,24 @@ function generateOasPaths(apiSpecList) {
           },
         };
         for (var ptr in api.responses.schema.properties) {
-          paths[_property][method].responses[statusCode]["content"][
-            api.responses.content
-          ]["schema"]["properties"][ptr] = {
-            type: api.responses.schema.properties[ptr].type.toLowerCase(),
-            description: api.responses.schema.properties[ptr].desc,
-            items: api.responses.schema.properties[ptr].items,
-          };
+          if (api.responses.schema.properties[ptr].type) {
+            paths[_property][method].responses[statusCode]["content"][
+              api.responses.content
+            ]["schema"]["properties"][ptr] = {
+              type: api.responses.schema.properties[ptr].type.toLowerCase(),
+              description: api.responses.schema.properties[ptr].desc,
+              items: api.responses.schema.properties[ptr].items,
+            };
+          }
+          else {
+            paths[_property][method].responses[statusCode]["content"][
+              api.responses.content
+            ]["schema"]["properties"][ptr] = {
+
+              description: "invalid type",
+
+            };
+          }
         }
 
         for (var property2 in api.errors) {
