@@ -11,7 +11,7 @@
 		"path": "^0.12.7",
 		"yargs": "^16.2.0"
 	},
-	"version": "0.0.49",
+	"version": "0.0.50",
 	"description": "A CLI tool to generate serverless.yml",
 	"bin": {
 		"slsberry": "bin/cli.js"

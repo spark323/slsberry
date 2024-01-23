@@ -56,13 +56,12 @@ async function getApiSpecList(targetFiles) {
     try {
       // [todo2: Optimize path parsing]
       // Generate a function name from the file path, excluding the "./src/lambda" part
-      const parsedPathName = path.replace(".js", "").replaceAll("\\\\", "/");
-      const nameArr = parsedPathName.split("/");
+      let name = path.replace(".js", "");
+      name = replaceAll(name, "\\\\", "/");
+      let nameArr = name.split("/");
       const idxLambda = nameArr.indexOf("lambda");
-      const name = nameArr
-        .slice(idxLambda - 1)
-        .slice(2)
-        .join("/");
+      nameArr = nameArr.slice(idxLambda - 1);
+      name = nameArr.slice(2).join("/");
 
       // Parse the function file to extract the API specification
       let obj;
@@ -518,8 +517,9 @@ function generateOasPaths(apiSpecList) {
               api.responses.content
             ]["schema"]["properties"][ptr] = {
 
-              description: "invalid type",
-
+              type: "invalid or unsuppoerted type",
+              description: api.responses.schema.properties[ptr].desc,
+              items: api.responses.schema.properties[ptr].items,
             };
           }
         }
