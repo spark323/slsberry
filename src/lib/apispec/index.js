@@ -142,9 +142,9 @@ async function printServerlessFunction(
                 httpApi: {
                   path: `/${stage}/${item.uri}`,
                   method: `${item.method
-                    ? item.method.toLowerCase()
-                    : item.event.method.toLowerCase()
-                    }`,
+                      ? item.method.toLowerCase()
+                      : item.event.method.toLowerCase()
+                  }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }
                     : undefined,
@@ -466,6 +466,11 @@ function generateOasPaths(apiSpecList) {
     paths[_property] = {};
     for (var method in sortedApiSpecList[property]) {
       const api = sortedApiSpecList[property][method];
+
+      if (api.hide) {
+        continue;
+      }
+      
       paths[_property][method] = {};
       paths[_property][method].description = api.desc;
       paths[_property][method].summary = api.summary;
@@ -635,6 +640,14 @@ function generateOasPaths(apiSpecList) {
             },
           },
         };
+      }
+
+      if (api.requestBody) {
+        paths[_property][method].requestBody = api.requestBody;
+      }
+
+      if (api.responses && !api.responses.content) {
+        paths[_property][method].responses = api.responses;
       }
     }
   }
