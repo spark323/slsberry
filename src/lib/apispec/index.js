@@ -142,9 +142,9 @@ async function printServerlessFunction(
                 httpApi: {
                   path: `/${stage}/${item.uri}`,
                   method: `${item.method
-                    ? item.method.toLowerCase()
-                    : item.event.method.toLowerCase()
-                    }`,
+                      ? item.method.toLowerCase()
+                      : item.event.method.toLowerCase()
+                  }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }
                     : undefined,
@@ -635,6 +635,14 @@ function generateOasPaths(apiSpecList) {
             },
           },
         };
+      }
+
+      if (api.requestBody) {
+        paths[_property][method].requestBody = api.requestBody;
+      }
+
+      if (api.responses && !api.responses.content) {
+        paths[_property][method].responses = api.responses;
       }
     }
   }
