@@ -466,6 +466,11 @@ function generateOasPaths(apiSpecList) {
     paths[_property] = {};
     for (var method in sortedApiSpecList[property]) {
       const api = sortedApiSpecList[property][method];
+
+      if (api.hide) {
+        continue;
+      }
+      
       paths[_property][method] = {};
       paths[_property][method].description = api.desc;
       paths[_property][method].summary = api.summary;
