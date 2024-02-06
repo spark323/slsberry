@@ -140,8 +140,9 @@ async function printServerlessFunction(
               restExist = true;
               funcObject.events.push({
                 httpApi: {
-                  path: `/${stage}/${item.uri}`,
-                  method: `${item.method
+                  path: item.path ? item.path : `/${stage}/${item.uri}`,
+                  method: `${
+                    item.method
                       ? item.method.toLowerCase()
                       : item.event.method.toLowerCase()
                   }`,
@@ -395,8 +396,8 @@ async function printServerlessFunction(
   }
   serverlessTemplet1.functions = {
     ...functions,
-    ...serverlessTemplet1.functions
-  }
+    ...serverlessTemplet1.functions,
+  };
   serverlessTemplet1.provider.stage = `${stage}-${version}`;
   if (!serverlessTemplet1.resources) {
     serverlessTemplet1.resources = {
@@ -470,7 +471,7 @@ function generateOasPaths(apiSpecList) {
       if (api.hide) {
         continue;
       }
-      
+
       paths[_property][method] = {};
       paths[_property][method].description = api.desc;
       paths[_property][method].summary = api.summary;
@@ -516,12 +517,10 @@ function generateOasPaths(apiSpecList) {
               description: api.responses.schema.properties[ptr].desc,
               items: api.responses.schema.properties[ptr].items,
             };
-          }
-          else {
+          } else {
             paths[_property][method].responses[statusCode]["content"][
               api.responses.content
             ]["schema"]["properties"][ptr] = {
-
               type: "invalid or unsuppoerted type",
               description: api.responses.schema.properties[ptr].desc,
               items: api.responses.schema.properties[ptr].items,
