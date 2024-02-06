@@ -140,7 +140,7 @@ async function printServerlessFunction(
               restExist = true;
               funcObject.events.push({
                 httpApi: {
-                  path: item.path ? item.path : `/${stage}/${item.uri}`,
+                  path: element.path ? element.path : `/${stage}/${item.uri}`,
                   method: `${
                     item.method
                       ? item.method.toLowerCase()
@@ -240,7 +240,7 @@ async function printServerlessFunction(
                 restExist = true;
                 funcObject.events.push({
                   httpApi: {
-                    path: `/${stage}/${item.uri}`,
+                    path: element.path ? element.path : `/${stage}/${item.uri}`,
                     method: `${element.method.toLowerCase()}`,
                     authorizer: element.authorizer,
                   },
@@ -453,17 +453,24 @@ function generateOasPaths(apiSpecList) {
       ) {
         return;
       }
-      if (!sortedApiSpecList[item.uri]) {
-        sortedApiSpecList[item.uri] = [];
+
+      const path = item.event.find(
+        (e) => e.type.toLowerCase() === "rest"
+      )?.path;
+      const uri = path ? path : item.uri;
+
+      if (!sortedApiSpecList[uri]) {
+        sortedApiSpecList[uri] = [];
       }
-      sortedApiSpecList[item.uri][item.event[0].method.toLowerCase()] = item;
+
+      sortedApiSpecList[uri][item.event[0].method.toLowerCase()] = item;
     });
   }
 
   const paths = {};
 
   for (var property in sortedApiSpecList) {
-    const _property = "/" + property;
+    const _property = property.startsWith("/") ? property : `/${property}`;
     paths[_property] = {};
     for (var method in sortedApiSpecList[property]) {
       const api = sortedApiSpecList[property][method];
@@ -587,7 +594,7 @@ function generateOasPaths(apiSpecList) {
             in: "query",
             description: parm.desc,
             required: parm.req,
-            schema: { type: parm.type.toLowerCase() },
+            schema: { type: parm?.type?.toLowerCase() },
           });
         }
 
@@ -643,6 +650,10 @@ function generateOasPaths(apiSpecList) {
 
       if (api.requestBody) {
         paths[_property][method].requestBody = api.requestBody;
+      }
+
+      if (api.requestQuery) {
+        paths[_property][method].parameters = api.requestQuery;
       }
 
       if (api.responses && !api.responses.content) {
