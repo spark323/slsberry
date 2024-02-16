@@ -141,11 +141,10 @@ async function printServerlessFunction(
               funcObject.events.push({
                 httpApi: {
                   path: element.path ? element.path : `/${stage}/${item.uri}`,
-                  method: `${
-                    item.method
+                  method: `${item.method
                       ? item.method.toLowerCase()
                       : item.event.method.toLowerCase()
-                  }`,
+                    }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }
                     : undefined,
@@ -447,7 +446,7 @@ function generateOasPaths(apiSpecList) {
       if (
         !item ||
         item.hide ||
-        (item.event.length > 0
+        (item.event?.length > 0
           ? item.event[0].type.toLowerCase() !== "rest"
           : true)
       ) {
