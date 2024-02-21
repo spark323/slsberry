@@ -73,7 +73,6 @@ async function getApiSpecList(targetFiles) {
 
       if (obj) {
         // Add additional properties to the API specification object
-        obj.operationId = obj.operationId || name;
         obj.name = name;
         obj.uri = replaceHttpMethod(name);
 
@@ -453,16 +452,18 @@ function generateOasPaths(apiSpecList) {
         return;
       }
 
-      const path = item.event.find(
-        (e) => e.type.toLowerCase() === "rest"
-      )?.path;
-      const uri = path ? path : item.uri;
+      item.event.forEach((e) => {
+        if (e.type.toLowerCase() === "rest") {
+          const path = e.path;
+          const uri = path ? path : item.uri;
 
-      if (!sortedApiSpecList[uri]) {
-        sortedApiSpecList[uri] = [];
-      }
+          if (!sortedApiSpecList[uri]) {
+            sortedApiSpecList[uri] = [];
+          }
 
-      sortedApiSpecList[uri][item.event[0].method.toLowerCase()] = item;
+          sortedApiSpecList[uri][e.method.toLowerCase()] = item;
+        }
+      });
     });
   }
 
@@ -481,7 +482,8 @@ function generateOasPaths(apiSpecList) {
       paths[_property][method] = {};
       paths[_property][method].description = api.desc;
       paths[_property][method].summary = api.summary;
-      paths[_property][method].operationId = api.operationId;
+      paths[_property][method].operationId =
+        api.operationId || method.toUpperCase() + " " + _property;
       paths[_property][method].tags = [api.category, ...(api.tags || [])];
 
       if (!api.noAuth) {
