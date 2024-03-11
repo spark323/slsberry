@@ -47,7 +47,7 @@ async function getFunctionList(dir, arr) {
  * @param {Array<{ path: string }>} targetFiles - An array containing objects with 'path' property for each file.
  * @returns {{ [category: string]: import("../..").ApiSpec }} - An object containing API specifications categorized by function and any errors encountered.
  */
-async function getApiSpecList(targetFiles) {
+async function getApiSpecList(targetFiles, os = "linux") {
   const apiSpecList = {};
 
   for (const fileItem of targetFiles) {
@@ -63,10 +63,12 @@ async function getApiSpecList(targetFiles) {
       nameArr = nameArr.slice(idxLambda - 1);
       name = nameArr.slice(2).join("/");
 
+      //
       // Parse the function file to extract the API specification
       let obj;
+
       if (process.env.MODULE === "ESM") {
-        obj = (await import(path)).apiSpec;
+        obj = (await import((os.toString().toLowerCase().includes("windows")) ? `file://${path}` : path)).apiSpec;
       } else {
         obj = require(path).apiSpec;
       }
@@ -142,8 +144,8 @@ async function printServerlessFunction(
                 httpApi: {
                   path: element.path ? element.path : `/${stage}/${item.uri}`,
                   method: `${item.method
-                      ? item.method.toLowerCase()
-                      : item.event.method.toLowerCase()
+                    ? item.method.toLowerCase()
+                    : item.event.method.toLowerCase()
                     }`,
                   authorizer: item.authorizer
                     ? { name: item.authorizer }

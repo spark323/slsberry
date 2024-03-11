@@ -15,19 +15,20 @@ svlsbdr의 진입점
 async function generateServerlessFunction(
   templateFile,
   stage = "dev",
-  version = 1
+  version = 1,
+  os = "linux"
 ) {
   //먼저 src/lambda 이하의 파일을 파싱해 apiSpec들을 가져와서
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = await getApiSpecList(targetFiles);
+  const apiSpecList = await getApiSpecList(targetFiles, os);
 
   //serverless.yml로 프린트한다.
   await printServerlessFunction(templateFile, apiSpecList, stage, version);
 }
 
-async function generateOpenApiSpecFile(stag) {
+async function generateOpenApiSpecFile(stag, os) {
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = await getApiSpecList(targetFiles);
+  const apiSpecList = await getApiSpecList(targetFiles, os);
 
   const projectInfo = yaml.load(
     fs.readFileSync(stag ? `./info_${stag}.yml` : `./info.yml`, "utf8")

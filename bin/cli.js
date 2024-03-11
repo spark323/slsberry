@@ -20,13 +20,14 @@ const main = async () => {
     }
 
     if (argv.x) {
-      await builder.generateOpenApiSpecFile(argv.x);
+      await builder.generateOpenApiSpecFile(argv.x, argv.os ? argv.os : process.env.OS);
     }
 
     await builder.generateServerlessFunction(
       `./${templateFile}`,
       argv.stage ? argv.stage : process.env.STAGE,
-      argv.ver ? argv.ver : process.env.VER
+      argv.ver ? argv.ver : process.env.VER,
+      argv.os ? argv.os : process.env.OS,
     );
   } catch (e) {
     console.error(e);
