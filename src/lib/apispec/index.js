@@ -120,12 +120,12 @@ async function printServerlessFunction(
           item.disabled !== true &&
           !(item.disabled_stages && item.disabled_stages.includes(stage))
         ) {
-          const nameArr = item.name.split("/");
+          const nameArr = (item.target_function) ? item.target_function.split("/") : item.name.split("/");
           let funcObject = {
             name: item.functionName
               ? item.functionName
               : `\${self:service}_${stage}_${version}_${nameArr.join("_")}`,
-            handler: `src/lambda/${item.name}.handler`,
+            handler: (item.target_function) ? `src/lambda/${item.target_function}.handler` : `src/lambda/${item.name}.handler`,
             events: [],
           };
           //event가 array가 아닐 때, 즉 옛날 버전
@@ -142,7 +142,7 @@ async function printServerlessFunction(
               restExist = true;
               funcObject.events.push({
                 httpApi: {
-                  path: element.path ? element.path : `/${stage}/${item.uri}`,
+                  path: element.path ? element.path : `/${stage}/${(item.target_function) ? item.target_function : item.uri}`,
                   method: `${item.method
                     ? item.method.toLowerCase()
                     : item.event.method.toLowerCase()
@@ -241,7 +241,7 @@ async function printServerlessFunction(
                 restExist = true;
                 funcObject.events.push({
                   httpApi: {
-                    path: element.path ? element.path : `/${stage}/${item.uri}`,
+                    path: element.path ? element.path : `/${stage}/${(item.target_function) ? item.target_function : item.uri}`,
                     method: `${element.method.toLowerCase()}`,
                     authorizer: element.authorizer,
                   },
@@ -383,6 +383,10 @@ async function printServerlessFunction(
           //메모리 설정이 존재한다면 메모리 추가
           if (item.memorySize) {
             funcObject["memorySize"] = parseInt(item.memorySize);
+          }
+          //function url
+          if (item.url) {
+            funcObject["url"] = item.url
           }
           //스토리지 설정이 존재한다면 스토리지 추가
           if (item.ephemeralStorageSize) {
