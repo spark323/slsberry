@@ -92,7 +92,10 @@ async function getApiSpecList(targetFiles, os = "linux") {
   // Return the final API specification list
   return apiSpecList;
 }
-
+function capitalizeFirstLetter(str) {
+  if (!str) return str; // return the original string if it is empty or undefined
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 /*
 가져온 apiSpec 리스트를 기반으로 serverless.yml파일을 만든다.
 */
@@ -105,6 +108,7 @@ async function printServerlessFunction(
   //템플릿 파일을 읽는다.
   let serverlessTemplet1 = yaml.load(fs.readFileSync(templateFile, "utf8"));
   let functions = {};
+  let extraResources = []
   //만들어둔 apiSpecList를 활용해서
   let restExist = false;
   for (var property in apiSpecList) {
@@ -384,10 +388,22 @@ async function printServerlessFunction(
           if (item.memorySize) {
             funcObject["memorySize"] = parseInt(item.memorySize);
           }
-          //function url
+          //function url + Lambda Streaming
           if (item.url) {
             funcObject["url"] = item.url
+            if (item.response_stream) {
+              extraResources.push({
+                key: capitalizeFirstLetter(nameArr.join("Underscore") + "LambdaFunctionUrl"),
+                Value:
+                {
+                  "Properties": {
+                    "InvokeMode": "RESPONSE_STREAM"
+                  }
+                }
+              })
+            }
           }
+
           //스토리지 설정이 존재한다면 스토리지 추가
           if (item.ephemeralStorageSize) {
             funcObject["ephemeralStorageSize"] = parseInt(
@@ -408,6 +424,17 @@ async function printServerlessFunction(
     serverlessTemplet1.resources = {
       Outputs: {},
     };
+  }
+
+  let extraResourcesObj = {}
+  extraResources.forEach((element) => {
+    extraResourcesObj[element.key] = element.Value
+  })
+  //추가 리소스 추가
+  serverlessTemplet1.resources.Resources = {
+    ...serverlessTemplet1.resources.Resources,
+    ...extraResourcesObj
+
   }
 
   serverlessTemplet1.resources.Outputs = {
