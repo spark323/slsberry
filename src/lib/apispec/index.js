@@ -359,6 +359,10 @@ async function printServerlessFunction(
                   },
                 });
               }
+              else if (element.type == "custom") {
+                const { type, ...customContents } = element;
+                funcObject.events.push(customContents);
+              }
               //어느 이벤트에도 트리거되지 않는 함수
               else if (item.type == "pure") {
               }
