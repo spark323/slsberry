@@ -257,6 +257,7 @@ async function printServerlessFunction(
                   stream: {
                     type: "dynamodb",
                     arn: element.arn,
+                    parallelizationFactor: element.parallelizationFactor,
                   },
                 });
               } else if (element.type == "kinesis_stream") {
