@@ -257,6 +257,7 @@ async function printServerlessFunction(
                   stream: {
                     type: "dynamodb",
                     arn: element.arn,
+                    batchSize: element.batchSize,
                     parallelizationFactor: element.parallelizationFactor,
                   },
                 });
