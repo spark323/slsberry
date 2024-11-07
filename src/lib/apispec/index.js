@@ -119,6 +119,7 @@ async function printServerlessFunction(
       apiSpec.forEach(async (obj) => {
         const item = obj.item;
         //item의 method가 존재하고  disabled가 아니라면,
+        // console.log(item)
         if (
           item &&
           item.disabled !== true &&
@@ -132,6 +133,7 @@ async function printServerlessFunction(
             handler: (item.target_function) ? `src/lambda/${item.target_function}.handler` : `src/lambda/${item.name}.handler`,
             events: [],
           };
+
           //event가 array가 아닐 때, 즉 옛날 버전
 
           if (!Array.isArray(item.event)) {
@@ -143,6 +145,7 @@ async function printServerlessFunction(
                 },
               });
             } else if (item.type == "REST") {
+
               restExist = true;
               funcObject.events.push({
                 httpApi: {
@@ -233,6 +236,7 @@ async function printServerlessFunction(
             else {
             }
           } else {
+
             item.event.forEach((element) => {
               //웹소켓 타입
               if (element.type == "websocket") {
@@ -242,6 +246,7 @@ async function printServerlessFunction(
                   },
                 });
               } else if (element.type == "REST") {
+
                 restExist = true;
                 funcObject.events.push({
                   httpApi: {
@@ -371,6 +376,10 @@ async function printServerlessFunction(
               //별도의 명시가 없다면 pure
               else {
               }
+              funcObject["environment"] = {
+                PATH: element.path ? element.path : `/${stage}/${(item.target_function) ? item.target_function : item.uri}`
+              }
+
             });
           }
           //레이어가 존재한다면 레이어 추가
@@ -384,9 +393,16 @@ async function printServerlessFunction(
           if (item.timeout) {
             funcObject["timeout"] = parseInt(item.timeout);
           }
+
           if (item.environment) {
-            funcObject["environment"] = item.environment;
+            funcObject["environment"] =
+            {
+              ...funcObject.environment,
+              ...item.environment
+            }
+
           }
+
           if (item.role) {
             funcObject["role"] = item.role;
           }
@@ -416,6 +432,7 @@ async function printServerlessFunction(
               item.ephemeralStorageSize
             );
           }
+
           functions[`${nameArr.join("_")}`] = funcObject;
         }
       });
