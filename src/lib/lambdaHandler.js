@@ -88,19 +88,25 @@ function createRedirectionResponse(url, body, newToken) {
  * @param {string=} newToken - refresh token
  * @return {APIGatewayProxyResult} 생성된 Redirection Response
  */
-function createRedirectionResponseV2(url, body, newToken) {
+function createRedirectionResponseV2(url, body, newToken, apiSpec) {
 	var response = {
 		isBase64Encoded: false,
 		statusCode: 302,
-		headers: {
-			"Content-Type": "application/json; charset=utf-8",
-			"Access-Control-Expose-Headers": "*",
-			"Refreshed-Token": newToken ? newToken : "none",
-			"Access-Control-Allow-Origin": "*",
-			Location: url,
-		},
+
 		body: JSON.stringify(body),
 	};
+	if (!apiSpec.url) {
+		response = {
+			...response,
+			headers: {
+				"Content-Type": "application/json; charset=utf-8",
+				"Access-Control-Expose-Headers": "*",
+				"Refreshed-Token": newToken ? newToken : "none",
+				"Access-Control-Allow-Origin": "*",
+				Location: url,
+			},
+		}
+	}
 	return response;
 }
 
@@ -130,20 +136,28 @@ function createOKResponse(body, newToken) {
  * @param {string=} newToken - refresh token
  * @return {APIGatewayProxyResult} 생성된 OK Response
  */
-function createOKResponseV2(body, newToken) {
+function createOKResponseV2(body, newToken, apiSpec) {
 	let response = {
 		isBase64Encoded: false,
 		statusCode: 200,
-		headers: {
-			"Content-Type": "application/json; charset=utf-8",
-			"Access-Control-Expose-Headers": "*",
-			"Refreshed-Token": newToken ? newToken : "none",
-			"Access-Control-Allow-Origin": "*",
-			"api-version": process.env.version,
-		},
+
 		body: JSON.stringify(body),
 	};
-	return response;
+	if (!apiSpec.url) {
+		response = {
+			...response,
+			headers: {
+				headers: {
+					"Content-Type": "application/json; charset=utf-8",
+					"Access-Control-Expose-Headers": "*",
+					"Refreshed-Token": newToken ? newToken : "none",
+					"Access-Control-Allow-Origin": "*",
+					"api-version": process.env.version,
+				},
+			}
+		}
+		return response;
+	}
 }
 function createPredefinedErrorResponse(errors, errorType, comment) {
 	// if (comment) {
@@ -443,9 +457,9 @@ async function handleHttpRequest(event, context, apiSpec, handler, Logger) {
 		if (apiSpec.responses.raw) {
 			response = result;
 		} else if (result.status === 302) {
-			response = createRedirectionResponseV2(result.url, result.response);
+			response = createRedirectionResponseV2(result.url, result.response, undefined, apiSpec);
 		} else if (result.status === 200) {
-			response = createOKResponseV2(result.response);
+			response = createOKResponseV2(result.response, undefined, apiSpec);
 		} else {
 			const predefinedErrorName = isObject(result.predefinedError) ? result.predefinedError.result : result.predefinedError;
 			if (predefinedErrorName) {
