@@ -147,13 +147,13 @@ function createOKResponseV2(body, newToken, apiSpec) {
 		response = {
 			...response,
 			headers: {
-				headers: {
-					"Content-Type": "application/json; charset=utf-8",
-					"Access-Control-Expose-Headers": "*",
-					"Refreshed-Token": newToken ? newToken : "none",
-					"Access-Control-Allow-Origin": "*",
-					"api-version": process.env.version,
-				},
+
+				"Content-Type": "application/json; charset=utf-8",
+				"Access-Control-Expose-Headers": "*",
+				"Refreshed-Token": newToken ? newToken : "none",
+				"Access-Control-Allow-Origin": "*",
+				"api-version": process.env.version,
+
 			}
 		}
 		return response;
