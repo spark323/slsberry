@@ -183,10 +183,11 @@ function createPredefinedErrorResponse(errors, errorType, comment) {
 	//console.log(response);
 	return response;
 }
-function createPredefinedErrorResponseV2(errors, errorType, comment) {
+function createPredefinedErrorResponseV2(apiSpec, errorType, comment) {
 	// if (comment) {
 	//   console.log(comment);
 	// }
+	const errors = apiSpec.errors;
 	const obj = errors[errorType];
 	const reason = obj.reason;
 	const statusCode = obj.status_code;
@@ -204,7 +205,19 @@ function createPredefinedErrorResponseV2(errors, errorType, comment) {
 		},
 		body: JSON.stringify(body),
 	};
-	//console.log(response);
+	if (!apiSpec.url) {
+		response = {
+			...response,
+			headers: {
+				"Content-Type": "application/json; charset=utf-8",
+				"Access-Control-Allow-Origin": "*",
+				"api-version": process.env.version,
+			},
+		}
+		return response;
+	}
+
+
 	return response;
 }
 
@@ -461,10 +474,13 @@ async function handleHttpRequest(event, context, apiSpec, handler, Logger) {
 		} else if (result.status === 200) {
 			response = createOKResponseV2(result.response, undefined, apiSpec);
 		} else {
+			if (apiSpec.doNotHandleError) {
+				throw new Error(result.predefinedError);
+			}
 			const predefinedErrorName = isObject(result.predefinedError) ? result.predefinedError.result : result.predefinedError;
 			if (predefinedErrorName) {
 				if (Object.keys(apiSpec.errors || {}).includes(predefinedErrorName)) {
-					response = createPredefinedErrorResponseV2(apiSpec.errors, predefinedErrorName);
+					response = createPredefinedErrorResponseV2(apiSpec, predefinedErrorName);
 				} else {
 					// 주어진 predefinedError가 apiSpec에 정의되어 있지 않은 경우
 					Logger?.Error("invalid_predefined_error", event.routeKey, event.requestContext?.apiId, inputObject, predefinedErrorName);
@@ -478,11 +494,16 @@ async function handleHttpRequest(event, context, apiSpec, handler, Logger) {
 			}
 		}
 	} catch (error) {
-		// handler 내에서 처리되지 않은 오류 발생 시 500, Internal Server Error 반환
-		Logger?.Error("Uncaught exeception in handler", event.routeKey, event.requestContext?.apiId, inputObject, error);
-		response = createErrorResponseV2(500, {
-			result: "Internal Server Error",
-		});
+		if (apiSpec.doNotHandleError) {
+			throw error;
+		}
+		else {
+			// handler 내에서 처리되지 않은 오류 발생 시 500, Internal Server Error 반환
+			Logger?.Error("Uncaught exeception in handler", event.routeKey, event.requestContext?.apiId, inputObject, error);
+			response = createErrorResponseV2(500, {
+				result: "Internal Server Error",
+			});
+		}
 	}
 	await Logger?.finalize?.();
 	return response;

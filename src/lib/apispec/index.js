@@ -389,6 +389,12 @@ async function printServerlessFunction(
               ? item.layer
               : [item.layer];
           }
+          if (item.layers) {
+            // 하위호환을 위해 배열로 들어오지 않은 경우 배열로 변환
+            funcObject["layers"] = Array.isArray(item.layers)
+              ? item.layers
+              : [item.layers];
+          }
           //타임아웃이 존재한다면, 타임아웃 추가
           if (item.timeout) {
             funcObject["timeout"] = parseInt(item.timeout);
