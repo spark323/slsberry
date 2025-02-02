@@ -408,6 +408,12 @@ async function printServerlessFunction(
             }
 
           }
+          if (item.destinations) {
+            funcObject["destinations"] = {
+              onSuccess: item.destinations.onSuccess,
+              onFailure: item.destinations.onFailure
+            }
+          }
 
           if (item.role) {
             funcObject["role"] = item.role;
