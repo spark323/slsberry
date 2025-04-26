@@ -389,6 +389,9 @@ async function printServerlessFunction(
               ? item.layer
               : [item.layer];
           }
+          if (item.package) {
+            funcObject["package"] = item.package
+          }
           if (item.layers) {
             // 하위호환을 위해 배열로 들어오지 않은 경우 배열로 변환
             funcObject["layers"] = Array.isArray(item.layers)
@@ -407,12 +410,6 @@ async function printServerlessFunction(
               ...item.environment
             }
 
-          }
-          if (item.destinations) {
-            funcObject["destinations"] = {
-              onSuccess: item.destinations.onSuccess,
-              onFailure: item.destinations.onFailure
-            }
           }
 
           if (item.role) {
