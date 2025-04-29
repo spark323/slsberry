@@ -20,7 +20,11 @@ async function generateServerlessFunction(
 ) {
   //먼저 src/lambda 이하의 파일을 파싱해 apiSpec들을 가져와서
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = await getApiSpecList(targetFiles, os);
+
+  const filteredFiles = targetFiles.filter(file => !file.path.toLowerCase().includes('jest'));
+
+  const apiSpecList = await getApiSpecList(filteredFiles, os);
+
 
   //serverless.yml로 프린트한다.
   await printServerlessFunction(templateFile, apiSpecList, stage, version);
@@ -28,7 +32,10 @@ async function generateServerlessFunction(
 
 async function generateOpenApiSpecFile(stag, os) {
   const targetFiles = await getFunctionList("./src/lambda", []);
-  const apiSpecList = await getApiSpecList(targetFiles, os);
+  //exclude files name with jest
+  const filteredFiles = targetFiles.filter(file => !file.path.toLowerCase().includes('jest'));
+
+  const apiSpecList = await getApiSpecList(filteredFiles, os);
 
   const projectInfo = yaml.load(
     fs.readFileSync(stag ? `./info_${stag}.yml` : `./info.yml`, "utf8")
