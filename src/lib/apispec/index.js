@@ -717,7 +717,13 @@ function generateOasPaths(apiSpecList) {
       }
 
       if (api.requestQuery) {
-        paths[_property][method].parameters = api.requestQuery;
+        paths[_property][method].parameters =
+
+          Object.entries(api.requestQuery).map(([key, value]) => {
+            return { name: key, ...value };
+          });
+
+
       }
 
       if (api.responses && !api.responses.content) {
