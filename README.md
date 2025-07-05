@@ -5,22 +5,7 @@
 
 # slsberry
 
-AWS Lambda 기반의 Serverless 개발을 위한 포괄### websocket
-
-```javascript
-const apiSpec = {
-    "category": "test",
-    "event":[
-        {
-            "type": "websocket",
-            "route":"$connect"
-        }
-    ]
-    ...
-};
-```
-
-event.route : API Gateway Websocket Route ([참조](https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-develop-routes.html))주요 기능
+slsberry는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 프레임워크입니다. 소스 코드 내의 파일에 정의된 스펙 문서를 기반으로 자동으로 Serverless Framework yml파일 내에 Lambda 함수를 생성해주고 OpenAPI 3.0, Notion 등으로 문서화도 수행합니다.  
 
 1. **템플릿 기반 구성**: [Serverless Framework](https://www.serverless.com/)의 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 자동 생성
 2. **자동 문서화**: 각 함수의 apiSpec을 기반으로 자동 문서 생성 및 export (Notion, OpenAPI 3.0)
