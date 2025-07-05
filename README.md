@@ -4,101 +4,128 @@
 </div>
 
 # slsberry
-(현재 문서화 진행중입니다)
-slsberry는 AWS Lambda 기반의 Serverless 개발을 효율적으로 도와주는 프레임워크입니다.
 
-1. [Serverless Framework](https://www.serverless.com/)에서 사용하는 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 쉽게 만들어줍니다.
-2. 각 함수의 미리 선언된 spec을 기반으로 자동으로 문서를 생성해 export(Notion,OpenAPI 3.0)해줍니다.
+AWS Lambda 기반의 Serverless 개발을 위한 포괄### websocket
+
+```javascript
+const apiSpec = {
+    "category": "test",
+    "event":[
+        {
+            "type": "websocket",
+            "route":"$connect"
+        }
+    ]
+    ...
+};
+```
+
+event.route : API Gateway Websocket Route ([참조](https://docs.aws.amazon.com/apigateway/latest/developerguide/websocket-api-develop-routes.html))주요 기능
+
+1. **템플릿 기반 구성**: [Serverless Framework](https://www.serverless.com/)의 [serverless.yml](https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml) 파일을 템플릿을 기반으로 자동 생성
+2. **자동 문서화**: 각 함수의 apiSpec을 기반으로 자동 문서 생성 및 export (Notion, OpenAPI 3.0)
+3. **다양한 이벤트 소스 지원**: REST API, WebSocket, S3, SQS, Cognito, Step Functions, IoT 등
+4. **환경별 배포 관리**: 스테이지 및 버전 기반 배포
+5. **TypeScript 지원**: 타입 안전성을 위한 완전한 TypeScript 지원
 
 ## 설치
 
-```
+```bash
 npm install slsberry
 ```
 
-```
-yarn install slsberry
+또는
+
+```bash
+yarn add slsberry
 ```
 
-## 사용 방법
+## 빠른 시작
 
-serverless.yml 빌드
-
-```
+1. **serverless.yml 빌드**
+```bash
 slsberry build
 ```
 
-배포(Serverless Framework와 동일합니다.)
-
-```
+2. **배포 (Serverless Framework와 동일)**
+```bash
 serverless deploy --aws-profile [awsprofile 이름]
 ```
 
-# severless.yml 생성
+3. **문서 생성**
+```bash
+# OpenAPI 문서 생성
+slsberry --openapi
 
-공통 리소스(기본 설정,IAM 역할, Cloudformation 기반 리소스 등)를 정의한 템플릿 파일을 기반으로 apiSpec이 정의된 함수가 포함된 새로운 serverles.yml 파일을 생성해줍니다.
+# Notion 문서 생성
+slsberry -n {notion_api_key}
+```
+
+# serverless.yml 생성
+
+공통 리소스(기본 설정, IAM 역할, CloudFormation 기반 리소스 등)를 정의한 템플릿 파일을 기반으로 apiSpec이 정의된 함수가 포함된 새로운 serverless.yml 파일을 생성해줍니다.
 
 ## serverless_template.yml
 
-Lambda 함수를 제외한 나머지 내용을 정의하는 템플릿 파일입니다. 기본 이름은 serverless_template.yml 입니다. -t flag 로 template 파일을 정의할 수 있습니다.
+Lambda 함수를 제외한 나머지 내용을 정의하는 템플릿 파일입니다. 기본 이름은 `serverless_template.yml`입니다. `-t` 플래그로 템플릿 파일을 지정할 수 있습니다.
 
-```
+```bash
 slsberry -t serverless_template.yml
 ```
 
-- 이 템플릿에서 정의되어 있는 app 이름이 함수 명에 포함됩니다.
+이 템플릿에서 정의되어 있는 app 이름이 함수명에 포함됩니다.
 
-## stage, version
+## 스테이지와 버전 관리
 
-Serverless.yml 및 함수 명 등에서 사용하는 stage와 각 스테이지 별 버전을 지정할 수 있습니다.
+Serverless.yml 및 함수명 등에서 사용하는 stage와 각 스테이지별 버전을 지정할 수 있습니다.
 
-```
+```bash
 slsberry --stage test --ver 1
 ```
 
-## dotenv
+## 환경 변수 설정
 
-최상위 디렉토리에 .env 파일에 STAGE와 VER을 설정하면 Stage와 Ver에 맞게 Serverless.yml 파일을 생성합니다.
+최상위 디렉토리에 `.env` 파일에 `STAGE`와 `VER`을 설정하면 해당 스테이지와 버전에 맞게 serverless.yml 파일을 생성합니다.
 
-```
-//.env 파일
+```bash
+# .env 파일
 STAGE=test
 VER=3
 ```
 
-이 경우 스테이지와 버전을 명시 할 필요가 없습니다.
+이 경우 스테이지와 버전을 명시할 필요가 없습니다.
+
+```bash
+slsberry   # 위와 같은 .env가 정의되어 있을 경우 slsberry --stage test --ver 3과 같음
+```
+
+## Lambda 함수 경로 규칙
+
+`./src/lambda` 경로 안에 정의된 함수들을 대상으로 합니다. REST 타입의 (HTTP로 트리거되는) Lambda 함수의 경우 경로가 곧 API Path가 됩니다.
+
+예시: `./src/lambda/user/data/get.js`라면, API 경로는 다음과 같습니다:
 
 ```
-slsberry   (위와 같은 .env가 정의되어 있을 경우 slsberry --stage test --ver 3 과 같음)
-```
-
-## Lambda 경로
-
-./src/lambda 경로 안에 정의된 함수들을 대상으로 합니다. Rest 타입의(HTTP로 트리거) Lambda함수의 경우 경로가 곧 Path가 됩니다.
-
-예: ./src/lambda/user/data/get.js 라면, API 경로는
-
-```
-https://{api_gateway_id}.execute-api.{region}.amazonaws.com/{stage}/user/data/get (Method: get)
+https://{api_gateway_id}.execute-api.{region}.amazonaws.com/{stage}/user/data/get (Method: GET)
 ```
 
 # apiSpec
 
 각 Lambda 함수에 다음 형식으로 apiSpec을 선언하여 export 합니다.
 
-```
+```javascript
 const apiSpec = {
     "category": "test",
     "desc": "테스트 함수",
-    event [
-
+    "event": [
+        // 이벤트 설정
     ]
 };
+
 exports.apiSpec = apiSpec;
 exports.handler = async (event, context) => {
-
-}
-
+    // 함수 구현
+};
 ```
 
 ## category
@@ -113,6 +140,15 @@ exports.handler = async (event, context) => {
 
 true로 설정할 경우 배포하지 않습니다.(serverless.yml에 포함되지 않습니다.)
 
+```javascript
+const apiSpec = {
+    "category": "test",
+    "desc": "테스트 함수",
+    "disabled": true,
+    "event": []
+};
+```
+
 ## event
 
 각 함수의 트리거 이벤트를 설정할 수 있습니다. 현재 사용 가능한 트리거는 다음과 같습니다.
@@ -125,6 +161,22 @@ true로 설정할 경우 배포하지 않습니다.(serverless.yml에 포함되�
 - sfn : Amazon Stepfunction
 - iot : AWS IOT
 - pure : 별도로 트리거를 지정하지 않음
+
+### Rest
+
+```javascript
+const apiSpec = {
+    "category": "test",
+    "event": [{
+        "type": "REST",
+        "method":"Get"
+    }]
+    ...
+};
+```
+
+- event.method : HTTP Method(Get,Put,Delete,Post...)
+- authorizer(optional): Serveless Template에서 정의한 Congito Authorizer Logical Id
 
 ### Rest
 
@@ -162,7 +214,7 @@ event.route : API Gateway Websocket Route ([참조](https://docs.aws.amazon.com/
 
 ### S3
 
-```
+```javascript
 const apiSpec = {
     "category": "test",
     "event": [
@@ -191,7 +243,7 @@ const apiSpec = {
 
 ### SQS
 
-```
+```javascript
 const apiSpec = {
     "category": "s3",
     "event": [
@@ -213,9 +265,65 @@ const apiSpec = {
 - sqsARN: 이미 존재하는 SQS를 사용할 경우 ARN 명시
 - sqs: Serverless Template에서 정의한 SQS의 Logical ID
 
+### Cognito
+
+```javascript
+const apiSpec = {
+    "category": "cognito",
+    "event": [
+        {
+            "type": "cognito",
+            "pool": "MyUserPool",
+            "trigger": "PreSignUp"
+        }
+    ]
+    ...
+}
+```
+
+([Serverless Framework Cognito Event](https://www.serverless.com/framework/docs/providers/aws/events/cognito-user-pool) 참고)
+
+- pool: Cognito User Pool의 Logical ID 또는 ARN
+- trigger: Cognito 트리거 이벤트 (PreSignUp, PostConfirmation, PreAuthentication 등)
+
+### Step Functions
+
+```javascript
+const apiSpec = {
+    "category": "stepfunctions",
+    "event": [
+        {
+            "type": "sfn"
+        }
+    ]
+    ...
+}
+```
+
+Step Functions에서 호출되는 Lambda 함수입니다. 별도의 이벤트 설정이 필요하지 않습니다.
+
+### IoT
+
+```javascript
+const apiSpec = {
+    "category": "iot",
+    "event": [
+        {
+            "type": "iot",
+            "sql": "SELECT * FROM 'topic/+/data'"
+        }
+    ]
+    ...
+}
+```
+
+([Serverless Framework IoT Event](https://www.serverless.com/framework/docs/providers/aws/events/iot) 참고)
+
+- sql: IoT SQL 쿼리문
+
 ### pure
 
-```
+```javascript
 const apiSpec = {
     "category": "test",
     "event": [
@@ -233,7 +341,7 @@ const apiSpec = {
 
 Lambda 함수의 이름을 정의합니다.
 
-```
+```javascript
 const apiSpec = {
     "category": "test",
     "event": [
@@ -262,6 +370,49 @@ ${self:service}_${stage}_${version}_user_data_get
 
 입니다.
 
+# CLI 명령어
+
+slsberry는 다양한 CLI 옵션을 제공합니다:
+
+## 기본 명령어
+
+```bash
+# 기본 빌드 (현재 디렉토리의 .env 파일 또는 기본값 사용)
+slsberry
+
+# 또는
+slsberry build
+```
+
+## 옵션
+
+```bash
+# 스테이지와 버전 지정
+slsberry --stage production --ver 2
+
+# 템플릿 파일 지정
+slsberry -t custom_template.yml
+
+# OpenAPI 문서 생성
+slsberry --openapi
+
+# Notion 문서 생성
+slsberry -n {notion_api_key}
+
+# 도움말 보기
+slsberry --help
+```
+
+## 환경 변수
+
+`.env` 파일에서 다음 환경 변수를 설정할 수 있습니다:
+
+```bash
+STAGE=development
+VER=1
+TEMPLATE=serverless_template.yml
+```
+
 # 문서화
 
 apiSpec을 기반으로 최상위 info.yml에 정의된 정보로 notion 혹은 OpenAPI에 export 할 수 있는 api 문서를 생성합니다.
@@ -270,7 +421,7 @@ apiSpec을 기반으로 최상위 info.yml에 정의된 정보로 notion 혹은 
 
 프로젝트의 정보를 담습니다.
 
-```
+```yaml
 title: demo-slsberry
 description: demo project
 version: 0.0.1
@@ -280,12 +431,11 @@ contact:
   url: rubywave.io
 host: https://rubywave.io
 database_id: 4803f792302e4c7bbd2124a55b117465
-
 ```
 
 ## notion 문서화
 
-```
+```bash
 slsberry -n {notion_api_key}
 ```
 
@@ -294,6 +444,13 @@ notion_api_key의 경우 [링크](https://developers.notion.com/) 를 참고해�
 Notion 데이터베이스는 경우 Name Description Stage(Select) Version 컬럼이 있어야 합니다.
 ![이미지](https://github.com/spark323/serverless-config-builder/blob/master/doc/image/1.png)
 
+## OpenAPI 문서화
+
+```bash
+slsberry --openapi
+```
+
+REST API 이벤트가 포함된 함수들을 기반으로 OpenAPI 3.0 스펙의 JSON 파일을 생성합니다. 생성된 파일은 Swagger UI나 다른 OpenAPI 도구에서 사용할 수 있습니다.
 
 ## License
 
