@@ -641,7 +641,7 @@ project/
 
 ## 미들웨어 패턴
 
-middy와 함께 사용하는 현대적인 패턴:
+middy와 함께 사용하는 현대적인 패턴을 권장합니다.
 
 ```typescript
 import middy from "@middy/core";
