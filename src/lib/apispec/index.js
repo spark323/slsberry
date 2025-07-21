@@ -377,7 +377,7 @@ async function printServerlessFunction(
               else {
               }
               funcObject["environment"] = {
-                PATH: element.path ? element.path : `/${stage}/${(item.target_function) ? item.target_function : item.uri}`
+                URI_PATH: element.path ? element.path : `/${stage}/${(item.target_function) ? item.target_function : item.uri}`
               }
 
             });
