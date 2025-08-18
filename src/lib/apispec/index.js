@@ -521,7 +521,7 @@ function generateOasPaths(apiSpecList) {
       const path = item.event.find(
         (e) => e.type.toLowerCase() === "rest"
       )?.path;
-      const uri = path ? path : item.uri;
+      const uri = path ? path : (item.target_function ? item.target_function : item.uri);
 
       if (!sortedApiSpecList[uri]) {
         sortedApiSpecList[uri] = [];
