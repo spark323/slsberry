@@ -30,10 +30,15 @@ async function generateServerlessFunction(
   await printServerlessFunction(templateFile, apiSpecList, stage, version);
 }
 
-async function generateOpenApiSpecFile(stag, os) {
+async function generateOpenApiSpecFile(stag, os, filter) {
   const targetFiles = await getFunctionList("./src/lambda", []);
   //exclude files name with jest
-  const filteredFiles = targetFiles.filter(file => !file.path.toLowerCase().includes('jest'));
+  let filteredFiles = targetFiles.filter(file => !file.path.toLowerCase().includes('jest'));
+  
+  // Filter by path string if filter parameter is provided
+  if (filter) {
+    filteredFiles = filteredFiles.filter(file => file.path.includes(filter));
+  }
 
   const apiSpecList = await getApiSpecList(filteredFiles, os);
 

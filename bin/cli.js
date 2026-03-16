@@ -20,7 +20,7 @@ const main = async () => {
     }
 
     if (argv.x) {
-      await builder.generateOpenApiSpecFile(argv.x, argv.os ? argv.os : process.env.OS);
+      await builder.generateOpenApiSpecFile(argv.x, argv.os ? argv.os : process.env.OS, argv.f);
     }
 
     await builder.generateServerlessFunction(
