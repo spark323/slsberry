@@ -16,6 +16,21 @@ export type ApiSpec = {
    * @deprecated
    */
   desc: string;
+  /**
+   * @description enable Lambda durable execution for only this generated function
+   */
+  durableConfig?: {
+    /**
+     * @description maximum execution time in seconds
+     */
+    executionTimeout?: number;
+    ExecutionTimeout?: number;
+    /**
+     * @description how long to retain execution history in days
+     */
+    retentionPeriodInDays?: number;
+    RetentionPeriodInDays?: number;
+  };
   description: string;
   parameters: {
     [key: string]: {

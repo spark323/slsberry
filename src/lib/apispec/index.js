@@ -96,6 +96,27 @@ function capitalizeFirstLetter(str) {
   if (!str) return str; // return the original string if it is empty or undefined
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+function createDurableConfig(durableConfig) {
+  const executionTimeout =
+    durableConfig.ExecutionTimeout ?? durableConfig.executionTimeout;
+  const retentionPeriodInDays =
+    durableConfig.RetentionPeriodInDays ?? durableConfig.retentionPeriodInDays;
+
+  if (!executionTimeout) {
+    throw new Error("durableConfig.executionTimeout is required");
+  }
+
+  const config = {
+    ExecutionTimeout: parseInt(executionTimeout),
+  };
+
+  if (retentionPeriodInDays) {
+    config.RetentionPeriodInDays = parseInt(retentionPeriodInDays);
+  }
+
+  return config;
+}
 /*
 가져온 apiSpec 리스트를 기반으로 serverless.yml파일을 만든다.
 */
@@ -109,8 +130,10 @@ async function printServerlessFunction(
   let serverlessTemplet1 = yaml.load(fs.readFileSync(templateFile, "utf8"));
   let functions = {};
   let extraResources = []
+  let extraExtensions = {};
   //만들어둔 apiSpecList를 활용해서
   let restExist = false;
+  let durableFunctionExist = false;
   for (var property in apiSpecList) {
     //apiSpecList는 카테고리 를 Key로 하여 구성되어 있다.
     let apiSpec = apiSpecList[property];
@@ -442,6 +465,17 @@ async function printServerlessFunction(
             );
           }
 
+          if (item.durableConfig) {
+            extraExtensions[
+              capitalizeFirstLetter(nameArr.join("Underscore") + "LambdaFunction")
+            ] = {
+              Properties: {
+                DurableConfig: createDurableConfig(item.durableConfig),
+              },
+            };
+            durableFunctionExist = true;
+          }
+
           functions[`${nameArr.join("_")}`] = funcObject;
         }
       });
@@ -452,6 +486,9 @@ async function printServerlessFunction(
     ...serverlessTemplet1.functions,
   };
   serverlessTemplet1.provider.stage = `${stage}-${version}`;
+  if (durableFunctionExist) {
+    serverlessTemplet1.provider.versionFunctions = true;
+  }
   if (!serverlessTemplet1.resources) {
     serverlessTemplet1.resources = {
       Outputs: {},
@@ -467,6 +504,13 @@ async function printServerlessFunction(
     ...serverlessTemplet1.resources.Resources,
     ...extraResourcesObj
 
+  }
+
+  if (Object.keys(extraExtensions).length > 0) {
+    serverlessTemplet1.resources.extensions = {
+      ...serverlessTemplet1.resources.extensions,
+      ...extraExtensions,
+    };
   }
 
   serverlessTemplet1.resources.Outputs = {

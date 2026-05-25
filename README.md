@@ -257,6 +257,34 @@ export const apiSpec = {
 };
 ```
 
+## durableConfig
+
+Set `durableConfig` to enable AWS Lambda durable execution for only this generated function. For Serverless Framework versions that do not support `durableConfig` directly, slsberry writes it through `resources.extensions` onto the generated `AWS::Lambda::Function` resource. When any function uses `durableConfig`, slsberry also sets `provider.versionFunctions: true` because durable functions require Lambda function versioning.
+
+```typescript
+export const apiSpec = {
+    durableConfig: {
+        executionTimeout: 3600,
+        retentionPeriodInDays: 14,
+    },
+    // ...
+};
+```
+
+Generated `serverless.yml` includes an extension like this:
+
+```yaml
+provider:
+  versionFunctions: true
+resources:
+  extensions:
+    PetUnderscoregetLambdaFunction:
+      Properties:
+        DurableConfig:
+          ExecutionTimeout: 3600
+          RetentionPeriodInDays: 14
+```
+
 ## disabled
 
 true로 설정할 경우 배포하지 않습니다.(serverless.yml에 포함되지 않습니다.)
